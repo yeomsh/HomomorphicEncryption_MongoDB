@@ -15,4 +15,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'org.mongodb:mongodb-driver-sync:4.0.1'
     compile 'org.mongodb:mongodb-driver-legacy:4.0.1'
+    compile files('libs/bcprov-jdk15on-162.jar')
+    compile files('libs/json-simple-1.1.1.jar')
 }

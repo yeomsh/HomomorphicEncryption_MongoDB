@@ -2,8 +2,6 @@ package HomomorphicEncryption;
 
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
-
-import javax.print.Doc;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -15,14 +13,24 @@ public class Server {
     private BigInteger p; //서버의 개인키
     private BigInteger a; //서버alpha
     public NoSQLDB nosqldb;
-
+    private ArrayList<User> uList;
 
     public Server(BigInteger p, BigInteger a) {
         this.p = p;
         this.a = a;
         this.nosqldb = new NoSQLDB();
+        loadUser();
+    }
+    public ArrayList<User> getuList() {
+        return uList;
     }
 
+    public void loadUser(){
+       uList = nosqldb.getUser();
+       for (User u: uList){
+           System.out.println(u.id.toString() + " , "+u.ip);
+       }
+    }
     public void addSystemAlpha(Data data) { //user alpha 지우고, system alpha 입히기
         data.c1 = data.makeCi(data.c1.mod(p).compareTo(p.divide(BigInteger.TWO)) > 0 ? data.c1.mod(p).subtract(p) : data.c1.mod(p), a);
         data.c3 = data.makeCi(data.c3.mod(p).compareTo(p.divide(BigInteger.TWO)) > 0 ? data.c3.mod(p).subtract(p) : data.c3.mod(p), a);
