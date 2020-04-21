@@ -112,17 +112,19 @@ public class NoSQLDB {
             sample = new Document("file",arraylist);
         System.out.println(saveKeywordId.toString());
 
+        //savekeywordid에 대한 zstring 넣는 작업
         for(int i = 0;i< saveKeywordId.size();i++){
-            if(zindex.find(eq("_id",saveKeywordId.get(i))).first()==null){
+            if(zindex.find(eq("_id",saveKeywordId.get(i))).first()==null){ //현재 등록하려는 파일 아이디가 이미 들어있을 때
+                //eq: if _id == savekeywordid.get(i)
                 sample.put("_id",saveKeywordId.get(i));
                 ArrayList temp = (ArrayList) sample.get("file");
                 for(i=0;i<temp.size();i++) {
-                    if(((Document) temp.get(i)).get("fileId").equals(fileId))
-                        temp.remove(i);
+                    if(((Document) temp.get(i)).get("fileId").equals(fileId)) //기존에 fileId가 file z-index에 있다면?
+                        temp.remove(i); //만약에 안지우면, 127line에서 temp.add를 하는데, 그럼 같은 파일아이디,같은 키워드에 대해 값이 11 두개 생기니까 미리지워줘
                     else
-                        ((Document) temp.get(i)).put("exist", "0");
+                        ((Document) temp.get(i)).put("exist", "0"); //put: 값 바꾸기
                 }
-                temp.add(new Document("fileId",fileId).append("exist","1"));
+                temp.add(new Document("fileId",fileId).append("exist","1")); //append: 추가하기
                 sample.put("file",temp);
                 System.out.println(sample.toJson());
                 zindex.insertOne(sample);
@@ -131,6 +133,7 @@ public class NoSQLDB {
                 zindex.updateOne(eq("_id",saveKeywordId.get(i)),new Document("$push",new Document("file",new Document("fileId",fileId).append("exist","1"))));
         }
         zindex.updateMany(not(elemMatch("file",eq("fileId",fileId))), new Document("$push",new Document("file",new Document("fileId",fileId).append("exist","0"))));
+        //file에 내가 넣으려는 fildId가 없으면 싹다 0으로 바꿈 -> 모든 keywordid에 대해 file (document)에 대해 {exitst:0 ,fileid: fileid} 추가
         System.out.println(zindex.find(not(elemMatch("file",eq("fileId",fileId)))).first());
     }
 }
