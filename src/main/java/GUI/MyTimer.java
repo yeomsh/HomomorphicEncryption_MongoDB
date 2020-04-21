@@ -2,10 +2,12 @@ package GUI;
 
 import java.awt.Button;
 import java.awt.Choice;
-import java.awt.Label;
+
 import java.awt.Panel;
 
 import org.json.simple.JSONObject;
+
+import javax.swing.*;
 
 class MyTimer extends Panel {
 
@@ -13,8 +15,8 @@ class MyTimer extends Panel {
 
    Choice chour = new Choice();
    Choice cmin = new Choice();
-   Label lhour = new Label("시");
-   Label lmin = new Label("분");
+   JLabel lhour = new JLabel("시");
+   JLabel lmin = new JLabel("분");
    Button bt2 = new Button("확인");
 
    // 시 초이스 컴포넌트

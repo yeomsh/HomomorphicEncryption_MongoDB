@@ -29,9 +29,9 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 	//로그창
 	public JTextArea taLog = null;
 	//다이얼로그창
-	public InputDialog ipDialog = new InputDialog(this,"근로자의 IP를 입력해주세요",Mode.CONTRACT_NEW);
-	public InputDialog keywordDialog = new InputDialog(this,"검색할 키워드를 입력해주세요",Mode.CONTRACT_SEARCH);
-	public InputDialog initDialog = new InputDialog(this,"로그인",Mode.INIT);
+//	public InputDialog ipDialog = new InputDialog(this,"근로자의 IP를 입력해주세요",Mode.CONTRACT_NEW);
+//	public InputDialog keywordDialog = new InputDialog(this,"검색할 키워드를 입력해주세요",Mode.CONTRACT_SEARCH);
+//	public InputDialog initDialog = new InputDialog(this,"로그인",Mode.INIT);
 	public SignUpDialog signUpDialog = new SignUpDialog(this);
 	//계약서 작성창
 	public ContractGUI contractGUI;
@@ -111,19 +111,36 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 	}
 	void showIpDialog() {
 
-		ipDialog.okButton.addActionListener(this);
-		ipDialog.setVisible(true);
+		String name = JOptionPane.showInputDialog("계약할 사람의 ip를 입력하세요.");
+//		ipDialog.okButton.addActionListener(this);
+//		ipDialog.setVisible(true);
+		if(name==null)
+			JOptionPane.showMessageDialog(null, "계약서 작성을 취소합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
+		else {
+			contractGUI = new ContractGUI();
+			contractGUI.setStep1Contract(1);
+		}
 	}
 	void showKeywordDialog() {
-
-		keywordDialog.okButton.addActionListener(this);
-		keywordDialog.setVisible(true);
+		String name = JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
+//		keywordDialog.okButton.addActionListener(this);
+//		keywordDialog.setVisible(true);
 	}
-	void showInitDialog() {
+	String showInitDialog() {
+		String name = JOptionPane.showInputDialog("my Ip");
+		if(name==null) {
+			JOptionPane.showMessageDialog(null, "프로그램을 종료합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+		}
+		else
+			JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
+		//if(name.equals("true"))
+			showSignUpDialog();
 
-		initDialog.okButton.addActionListener(this);
-		initDialog.setVisible(true);
+//		initDialog.okButton.addActionListener(this);
+//		initDialog.setVisible(true);
 		//ip tf채워넣기
+		return name;
 	}
 	void showSignUpDialog() {
 
@@ -151,23 +168,28 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 			showKeywordDialog();
 		}
 
-		else if(source == initDialog.okButton) {
-			initDialog.setVisible(false);
-			showSignUpDialog();
-		}
-		else if(source == ipDialog.okButton) {
-			contractGUI = new ContractGUI();
-			contractGUI.setStep1Contract(1);
-		}
+//		else if(source == initDialog.okButton) {
+//			initDialog.setVisible(false);
+//			showSignUpDialog();
+//		}
+//		else if(source == ipDialog.okButton) {
+//			contractGUI = new ContractGUI();
+//			contractGUI.setStep1Contract(1);
+//		}
 		else if(source == signUpDialog.okButton) {
+			String userType = null;
 			if(signUpDialog.userType[0].isSelected())
-				System.out.println("점주 선택");
+				userType = "점주";
 			else if(signUpDialog.userType[1].isSelected())
-				System.out.println("근로자 선택");
-		}
-		else if(source == keywordDialog.okButton) {
+				userType = "근로자";
 
+			JOptionPane.showMessageDialog(null, userType+"로 회원가입 완료했습니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
+
+			signUpDialog.setVisible(false);
 		}
+//		else if(source == keywordDialog.okButton) {
+//
+//		}
 	}
 }
 

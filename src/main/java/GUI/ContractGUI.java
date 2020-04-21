@@ -1,35 +1,27 @@
 package GUI;
 
-import java.awt.Choice;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Label;
-import java.awt.Panel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Scanner;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import org.json.simple.JSONObject;
 
 public class ContractGUI extends JFrame {
 
+   JScrollPane scroll;
+   JPanel panel;
    JSONObject data2 = new JSONObject();
 
-   Label oNameLb, wNameLb, contractTermLb, placeLb, contentLb, workTimLb, restTimeLb, workDayLb, restDayLb;
-   Label wageTitleLb, wage1Lb, wage2_1Lb, wage2_2Lb, wage3_1Lb, wage3_2Lb, wage4Lb, wage5Lb;
-   Label insuranceLb, item12Lb, item13Lb;
-   Label contractDateLb;
-   Label signTitleLb, oSignTitleLb, wSignTitleLb;
-   Label oSign1Lb, oSign2Lb, oSign3Lb, oSign4Lb;
-   Label wSign1Lb, wSign2Lb, wSign3Lb;
+   JLabel oNameLb, wNameLb, contractTermLb, placeLb, contentLb, workTimLb, restTimeLb, workDayLb, restDayLb;
+   JLabel wageTitleLb, wage1Lb, wage2_1Lb, wage2_2Lb, wage3_1Lb, wage3_2Lb, wage4Lb, wage5Lb;
+   JLabel insuranceLb, item12Lb, item13Lb;
+   JLabel contractDateLb;
+   JLabel signTitleLb, oSignTitleLb, wSignTitleLb;
+   JLabel oSign1Lb, oSign2Lb, oSign3Lb, oSign4Lb;
+   JLabel wSign1Lb, wSign2Lb, wSign3Lb;
 
    JTextField oNameTxt, wNameTxt, contractTermTxt, placeTxt, contentTxt, workDayTxt, restDayTxt;
    JTextField wage1Txt, wage2_2Txt, wage3_2Txt, wage4Txt;
@@ -77,50 +69,64 @@ public class ContractGUI extends JFrame {
 
       super("근로계약서 작성");
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      setLayout(null);
+      setLayout(new BorderLayout());
+      panel = new JPanel();
+      panel.setLayout(null);
 
-      oNameLb = new Label("1. 사업주 이름");
-      wNameLb = new Label("2. 근로자 이름");
-      contractTermLb = new Label("3. 근로계약기간");
-      placeLb = new Label("4. 근무장소");
-      contentLb = new Label("5. 업무내용");
-      workTimLb = new Label("6. 소정근로시간");
-      restTimeLb = new Label("7. 휴게시간");
-      workDayLb = new Label("8. 근무일(요일)");
-      restDayLb = new Label("9. 휴일(요일)");
+      panel.setBorder(BorderFactory.createLineBorder(Color.red));
+      panel.setPreferredSize(new Dimension(500, 1100));
 
-      wageTitleLb = new Label("10.임금");
-      wage1Lb = new Label("금액");
-      wage2_1Lb = new Label("상여금 여부");
-      wage2_2Lb = new Label("금액");
-      wage3_1Lb = new Label("기타급여 여부");
-      wage3_2Lb = new Label("금액");
-      wage4Lb = new Label("지급날짜");
-      wage5Lb = new Label("지급방법");
+      scroll = new JScrollPane(panel);
+      add(scroll, BorderLayout.CENTER);
+      setSize(500, 1100);
 
-      insuranceLb = new Label("11. 사회보험 적용 여부");
-      item12Lb = new Label("12. 근로계약서 교부");
+      //setVisible(true);
+      // 세로 스크롤 사용, 가로 스크롤 사용 안함
+     // scrollPane = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+     // scrollPane.setBounds(4, 4, 340, 330);
+
+      oNameLb = new JLabel("1. 사업주 이름");
+      wNameLb = new JLabel("2. 근로자 이름");
+      contractTermLb = new JLabel("3. 근로계약기간");
+      placeLb = new JLabel("4. 근무장소");
+      contentLb = new JLabel("5. 업무내용");
+      workTimLb = new JLabel("6. 소정근로시간");
+      restTimeLb = new JLabel("7. 휴게시간");
+      workDayLb = new JLabel("8. 근무일(요일)");
+      restDayLb = new JLabel("9. 휴일(요일)");
+
+      wageTitleLb = new JLabel("10.임금");
+      wage1Lb = new JLabel("금액");
+      wage2_1Lb = new JLabel("상여금 여부");
+      wage2_2Lb = new JLabel("금액");
+      wage3_1Lb = new JLabel("기타급여 여부");
+      wage3_2Lb = new JLabel("금액");
+      wage4Lb = new JLabel("지급날짜");
+      wage5Lb = new JLabel("지급방법");
+
+      insuranceLb = new JLabel("11. 사회보험 적용 여부");
+      item12Lb = new JLabel("12. 근로계약서 교부");
       item12Txt = new JLabel(
               "<html><body>: 사업주는 근로계약을 체결함과 동시에 본 계약서를 사본하여 근로자의 교부요구와 관계없이 근로자에게 교부함<br>(근로기준법 제 17조 이행)</body></html>");
       item12Txt.setFont(new Font(null, Font.PLAIN, item12Txt.getFont().getSize()));
-      item13Lb = new Label("13. 기타");
+      item13Lb = new JLabel("13. 기타");
       item13Txt = new JLabel(": 이 계약에 정함이 없는 사항은 근로기준법령에 의함");
       item13Txt.setFont(new Font(null, Font.PLAIN, item13Txt.getFont().getSize()));
 
-      contractDateLb = new Label("14. 날짜");
+      contractDateLb = new JLabel("14. 날짜");
       contractDatePl = new MyCalendar();
 
-      signTitleLb = new Label("15. 서명");
-      oSignTitleLb = new Label("사업주");
-      wSignTitleLb = new Label("근로자");
-      oSign1Lb = new Label("-> 사업체명");
-      oSign2Lb = new Label("-> 전화번호");
-      oSign3Lb = new Label("-> 주소");
-      oSign4Lb = new Label("-> 대표자");
+      signTitleLb = new JLabel("15. 서명");
+      oSignTitleLb = new JLabel("사업주");
+      wSignTitleLb = new JLabel("근로자");
+      oSign1Lb = new JLabel("-> 사업체명");
+      oSign2Lb = new JLabel("-> 전화번호");
+      oSign3Lb = new JLabel("-> 주소");
+      oSign4Lb = new JLabel("-> 대표자");
 
-      wSign1Lb = new Label("-> 성명");
-      wSign2Lb = new Label("-> 전화번호");
-      wSign3Lb = new Label("-> 주소");
+      wSign1Lb = new JLabel("-> 성명");
+      wSign2Lb = new JLabel("-> 전화번호");
+      wSign3Lb = new JLabel("-> 주소");
 
       wage1Txt = new JTextField(20);
       wage2_2Txt = new JTextField(20);
@@ -167,122 +173,122 @@ public class ContractGUI extends JFrame {
          insurancePl.add(insuranceCb[i]);
       }
 
-      oNameLb.setBounds(20, 50, 100, 20);
-      wNameLb.setBounds(20, 80, 100, 20);
-      contractTermLb.setBounds(20, 110, 100, 20);
-      placeLb.setBounds(20, 170, 100, 20);
-      contentLb.setBounds(20, 200, 100, 20);
-      workTimLb.setBounds(20, 230, 100, 20);
-      restTimeLb.setBounds(20, 260, 100, 20);
-      workDayLb.setBounds(20, 290, 100, 20);
+      oNameLb.setBounds(20, 20, 100, 20);
+      wNameLb.setBounds(20, 50, 100, 20);
+      contractTermLb.setBounds(20, 80, 100, 20);
+      placeLb.setBounds(20, 140, 100, 20);
+      contentLb.setBounds(20, 170, 100, 20);
+      workTimLb.setBounds(20, 200, 100, 20);
+      restTimeLb.setBounds(20, 230, 100, 20);
+      workDayLb.setBounds(20, 260, 100, 20);
 
-      restDayLb.setBounds(20, 320, 100, 20);
+      restDayLb.setBounds(20, 290, 100, 20);
 
-      wageTitleLb.setBounds(20, 350, 100, 20);
+      wageTitleLb.setBounds(20, 320, 100, 20);
 
-      wage1Lb.setBounds(120, 370, 80, 20);
-      wage1Txt.setBounds(200, 370, 200, 20);
+      wage1Lb.setBounds(120, 340, 80, 20);
+      wage1Txt.setBounds(200, 340, 200, 20);
 
-      wage2_1Lb.setBounds(120, 400, 80, 20);
-      wage2_1Pl.setBounds(200, 390, 100, 30);
-      wage2_2Lb.setBounds(300, 400, 50, 20);
-      wage2_2Txt.setBounds(350, 400, 100, 20);
+      wage2_1Lb.setBounds(120, 370, 80, 20);
+      wage2_1Pl.setBounds(200, 360, 100, 30);
+      wage2_2Lb.setBounds(300, 370, 50, 20);
+      wage2_2Txt.setBounds(350, 370, 100, 20);
 
-      wage3_1Lb.setBounds(120, 430, 80, 20);
-      wage3_1Pl.setBounds(200, 420, 100, 30);
-      wage3_2Lb.setBounds(300, 430, 50, 20);
-      wage3_2Txt.setBounds(350, 430, 100, 20);
+      wage3_1Lb.setBounds(120, 400, 80, 20);
+      wage3_1Pl.setBounds(200, 390, 100, 30);
+      wage3_2Lb.setBounds(300, 400, 50, 20);
+      wage3_2Txt.setBounds(350, 400, 100, 20);
 
-      wage4Lb.setBounds(120, 460, 80, 20);
-      wage4Txt.setBounds(200, 460, 200, 20);
+      wage4Lb.setBounds(120, 430, 80, 20);
+      wage4Txt.setBounds(200, 430, 200, 20);
 
-      wage5Lb.setBounds(120, 490, 80, 20);
-      wage5Pl.setBounds(200, 480, 300, 30);
+      wage5Lb.setBounds(120, 460, 80, 20);
+      wage5Pl.setBounds(200, 450, 300, 30);
 
-      insuranceLb.setBounds(20, 530, 100, 20);
-      insurancePl.setBounds(120, 520, 400, 30);
+      insuranceLb.setBounds(20, 500, 130, 20);
+      insurancePl.setBounds(150, 490, 400, 30);
 
-      item12Lb.setBounds(20, 560, 200, 20);
-      item12Txt.setBounds(120, 580, 360, 50);
+      item12Lb.setBounds(20, 530, 200, 20);
+      item12Txt.setBounds(120, 550, 340, 50);
 
-      item13Lb.setBounds(20, 650, 100, 20);
-      item13Txt.setBounds(120, 650, 300, 20);
+      item13Lb.setBounds(20, 620, 100, 20);
+      item13Txt.setBounds(120, 620, 300, 20);
 
-      contractDateLb.setBounds(20, 680, 100, 20);
-      contractDatePl.setBounds(100, 670, 200, 30);
+      contractDateLb.setBounds(20, 650, 100, 20);
+      contractDatePl.setBounds(100, 640, 200, 30);
 
-      signTitleLb.setBounds(20, 710, 100, 20);
-      oSignTitleLb.setBounds(120, 720, 100, 20);
-      oSign1Lb.setBounds(120, 750, 80, 20);
-      oSign1Txt.setBounds(200, 750, 200, 20);
-      oSign2Lb.setBounds(120, 780, 80, 20);
-      oSign2Txt.setBounds(200, 780, 200, 20);
-      oSign3Lb.setBounds(120, 810, 80, 20);
-      oSign3Txt.setBounds(200, 810, 200, 20);
-      oSign4Lb.setBounds(120, 840, 80, 20);
-      oSign4Txt.setBounds(200, 840, 200, 20);
+      signTitleLb.setBounds(20, 680, 100, 20);
+      oSignTitleLb.setBounds(120, 690, 100, 20);
+      oSign1Lb.setBounds(120, 720, 80, 20);
+      oSign1Txt.setBounds(200, 720, 200, 20);
+      oSign2Lb.setBounds(120, 750, 80, 20);
+      oSign2Txt.setBounds(200, 750, 200, 20);
+      oSign3Lb.setBounds(120, 780, 80, 20);
+      oSign3Txt.setBounds(200, 780, 200, 20);
+      oSign4Lb.setBounds(120, 810, 80, 20);
+      oSign4Txt.setBounds(200, 810, 200, 20);
 
-      wSignTitleLb.setBounds(120, 870, 100, 20);
-      wSign1Lb.setBounds(120, 900, 80, 20);
-      wSign1Txt.setBounds(200, 900, 200, 20);
-      wSign2Lb.setBounds(120, 930, 80, 20);
-      wSign2Txt.setBounds(200, 930, 200, 20);
-      wSign3Lb.setBounds(120, 960, 80, 20);
-      wSign3Txt.setBounds(200, 960, 200, 20);
+      wSignTitleLb.setBounds(120, 840, 100, 20);
+      wSign1Lb.setBounds(120, 870, 80, 20);
+      wSign1Txt.setBounds(200, 870, 200, 20);
+      wSign2Lb.setBounds(120, 900, 80, 20);
+      wSign2Txt.setBounds(200, 900, 200, 20);
+      wSign3Lb.setBounds(120, 930, 80, 20);
+      wSign3Txt.setBounds(200, 930, 200, 20);
 
-      add(oNameLb);
-      add(wNameLb);
-      add(contractTermLb);
-      add(placeLb);
-      add(contentLb);
-      add(workTimLb);
-      add(restTimeLb);
-      add(workDayLb);
-      add(restDayLb);
-      add(wageTitleLb);
-      add(wage1Lb);
-      add(wage1Txt);
-      add(wage2_1Lb);
-      add(wage2_1Pl);
-      add(wage2_2Lb);
-      add(wage2_2Txt);
+      panel.add(oNameLb);
+      panel.add(wNameLb);
+      panel.add(contractTermLb);
+      panel.add(placeLb);
+      panel.add(contentLb);
+      panel.add(workTimLb);
+      panel.add(restTimeLb);
+      panel.add(workDayLb);
+      panel.add(restDayLb);
+      panel.add(wageTitleLb);
+      panel.add(wage1Lb);
+      panel.add(wage1Txt);
+      panel.add(wage2_1Lb);
+      panel.add(wage2_1Pl);
+      panel.add(wage2_2Lb);
+      panel.add(wage2_2Txt);
 
-      add(wage3_1Lb);
-      add(wage3_1Pl);
-      add(wage3_2Lb);
-      add(wage3_2Txt);
-      add(wage4Lb);
-      add(wage4Txt);
+      panel.add(wage3_1Lb);
+      panel.add(wage3_1Pl);
+      panel.add(wage3_2Lb);
+      panel.add(wage3_2Txt);
+      panel.add(wage4Lb);
+      panel.add(wage4Txt);
 
-      add(wage5Lb);
-      add(wage5Pl);
+      panel.add(wage5Lb);
+      panel.add(wage5Pl);
 
-      add(insuranceLb);
-      add(insurancePl);
-      add(item12Lb);
-      add(item12Txt);
-      add(item13Lb);
-      add(item13Txt);
-      add(contractDateLb);
-      add(contractDatePl);
-      add(signTitleLb);
-      add(oSignTitleLb);
-      add(oSign1Lb);
-      add(oSign1Txt);
-      add(oSign2Lb);
-      add(oSign2Txt);
-      add(oSign3Lb);
-      add(oSign3Txt);
-      add(oSign4Lb);
-      add(oSign4Txt);
+      panel.add(insuranceLb);
+      panel.add(insurancePl);
+      panel.add(item12Lb);
+      panel.add(item12Txt);
+      panel.add(item13Lb);
+      panel.add(item13Txt);
+      panel.add(contractDateLb);
+      panel.add(contractDatePl);
+      panel.add(signTitleLb);
+      panel.add(oSignTitleLb);
+      panel.add(oSign1Lb);
+      panel.add(oSign1Txt);
+      panel.add(oSign2Lb);
+      panel.add(oSign2Txt);
+      panel.add(oSign3Lb);
+      panel.add(oSign3Txt);
+      panel.add(oSign4Lb);
+      panel.add(oSign4Txt);
 
-      add(wSignTitleLb);
-      add(wSign1Lb);
-      add(wSign1Txt);
-      add(wSign2Lb);
-      add(wSign2Txt);
-      add(wSign3Lb);
-      add(wSign3Txt);
+      panel.add(wSignTitleLb);
+      panel.add(wSign1Lb);
+      panel.add(wSign1Txt);
+      panel.add(wSign2Lb);
+      panel.add(wSign2Txt);
+      panel.add(wSign3Lb);
+      panel.add(wSign3Txt);
 
       oNameTxt = new JTextField(20);
       wNameTxt = new JTextField(20);
@@ -327,8 +333,8 @@ public class ContractGUI extends JFrame {
       btnCancel.setSize(150, 40);
       btnSubmit.setSize(150, 40);
 
-      oNameTxt.setBounds(120, 50, 180, 20);
-      wNameTxt.setBounds(120, 80, 180, 20);
+      oNameTxt.setBounds(120, 20, 180, 20);
+      wNameTxt.setBounds(120, 50, 180, 20);
       // contractTermTxt.setBounds(120, 110, 180, 20);
       // txtHp1.setBounds(120, 140, 60, 20);
       // lblhipen1.setBounds(190, 140, 10, 20);
@@ -339,57 +345,57 @@ public class ContractGUI extends JFrame {
       contractTermStartPl = new MyCalendar();
       contractTermEndPl = new MyCalendar();
 
-      contractTermStartPl.setBounds(150, 100, 180, 30);
-      Label lblhipen1 = new Label("시작:");
-      Label lblhipen3 = new Label("---");
-      Label lblhipen4 = new Label("---");
-      lblhipen1.setBounds(120, 110, 30, 20);
-      contractTermEndPl.setBounds(150, 130, 180, 30);
-      Label lblhipen2 = new Label("종료:");
-      lblhipen2.setBounds(120, 140, 30, 20);
+      contractTermStartPl.setBounds(150, 70, 180, 30);
+      JLabel lblhipen1 = new JLabel("시작:");
+      JLabel lblhipen3 = new JLabel("---");
+      JLabel lblhipen4 = new JLabel("---");
+      lblhipen1.setBounds(120, 80, 30, 20);
+      contractTermEndPl.setBounds(150, 100, 180, 30);
+      JLabel lblhipen2 = new JLabel("종료:");
+      lblhipen2.setBounds(120, 110, 30, 20);
 
-      placeTxt.setBounds(120, 170, 180, 20);
-      contentTxt.setBounds(120, 200, 180, 20);
+      placeTxt.setBounds(120, 140, 180, 20);
+      contentTxt.setBounds(120, 170, 180, 20);
 
       for (int i = 0; i < 4; i++) {
          timer[i] = new MyTimer();
-         timer[i].setBounds(120 + 190 * (i % 2), 220 + i / 2 * 30, 160, 30);
-         add(timer[i]);
+         timer[i].setBounds(120 + 190 * (i % 2), 190 + i / 2 * 30, 160, 30);
+         panel.add(timer[i]);
       }
-      lblhipen3.setBounds(280, 220, 180, 40);
-      lblhipen4.setBounds(280, 250, 180, 40);
+      lblhipen3.setBounds(280, 190, 180, 40);
+      lblhipen4.setBounds(280, 220, 180, 40);
 
-      workDayPl.setBounds(120, 280, 400, 30);
-      restDayPl.setBounds(120, 310, 350, 30);
+      workDayPl.setBounds(120, 250, 400, 30);
+      restDayPl.setBounds(120, 280, 350, 30);
 
-      Panel paButton = new Panel();
+      JPanel paButton = new JPanel();
       paButton.add(btnSubmit);
       paButton.add(btnCancel);
       paButton.setBounds(50, 990, 370, 370);
 
-      add(lblhipen3);
-      add(lblhipen4);
-      add(oNameTxt);
-      add(wNameTxt);
-      add(contractTermTxt);
+      panel.add(lblhipen3);
+      panel.add(lblhipen4);
+      panel.add(oNameTxt);
+      panel.add(wNameTxt);
+      panel.add(contractTermTxt);
       // add(txtHp1);
       // add(lblhipen1);
       // add(txtHp2);
       // add(lblhipen2);
       // add(txtHp3);
-      add(placeTxt);
-      add(contentTxt);
+      panel.add(placeTxt);
+      panel.add(contentTxt);
       // add(workTimeTxt);
-      add(lblhipen1);
-      add(contractTermStartPl);
-      add(lblhipen2);
-      add(contractTermEndPl);
+      panel.add(lblhipen1);
+      panel.add(contractTermStartPl);
+      panel.add(lblhipen2);
+      panel.add(contractTermEndPl);
 
-      add(workDayPl);
-      add(restDayPl);
-      add(paButton);
+      panel.add(workDayPl);
+      panel.add(restDayPl);
+      panel.add(paButton);
 
-      setSize(500, 1400);
+
       setResizable(false);
       setVisible(false);
 
@@ -429,9 +435,10 @@ public class ContractGUI extends JFrame {
 
       btnCancel.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(null,"계약서 작성을 취소합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
             setVisible(false);
             System.out.println("취소");
-            System.exit(0);
+            //System.exit(0);
             // 추가할 내용
             // 공개키, 비밀키, id, qid, userType, ip 생성 후
             // user 데베에 추가
