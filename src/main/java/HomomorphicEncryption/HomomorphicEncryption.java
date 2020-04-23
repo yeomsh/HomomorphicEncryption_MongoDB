@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+
 import static com.mongodb.client.model.Filters.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -28,24 +29,21 @@ public class HomomorphicEncryption {
         //시작 전 kgc 및 server 생성
         settingToStart();
 
-
-        //user생성 및 확인
+        //user생성
         User userA = new User(kgc.pkSet);
-//
-//    //    server.loadUser();
 //
 //
         userA.setAu(kgc.shareAlpha()); //kgc -> user에 alpha 공유 (임의로)4
-////        userA.qid = new BigInteger("cb066fe11fed84bc5dcb04c08", 16);
+//        userA.qid = new BigInteger("cb066fe11fed84bc5dcb04c08", 16);
 
-        String a = "최승연";
-        String b = "염상희";
-        searchKeyword(userA,a);
-      //  requestToUpload(userA, new String[]{a, b});
+        String a = "최승연연";
+        String b = "염상희희";
+
+       // requestToUpload(userA, new String[]{a, b});
         //현재 키워드 20개
         //파일 10개
-       // for (int i = 0; i < 10; i++)
-         //       requestToUpload(userA, new String[]{a + i, b + i});
+//        for (int i = 0; i < 500; i++)
+//                requestToUpload(userA, new String[]{a + i, b + i});
 
 //        for(int j=0;j<2;j++) {
 //            for (int i = 0; i < 50; i++)
@@ -58,7 +56,7 @@ public class HomomorphicEncryption {
 //            requestToUpload(userA, new String[]{a,b + 1});
 //        }
 
-//       searchKeyword(userA,a);
+       searchKeyword(userA,a);
 
         //일단 테스트 용
         /*
@@ -111,10 +109,13 @@ public class HomomorphicEncryption {
     public static void requestToUpload(User user, String[] keywords){
         long start = System.currentTimeMillis();
         //근로자 or 점주 둘 중한명만 파일등록함
+        user.ChangeUserR();
+
         Object fileId = server.uploadContract_nosql(new Data(user, new BigInteger(SHA1(keywords[0]),16),user.getAu(),kgc.pkSet));
         //키워드 기반 암호문 생성
         Data[] datas = new Data[2];
         for(int i = 0; i<2;i++){ //한 파일에 키워드가 2개니까 !
+            user.ChangeUserR();
             datas[i] = new Data(user, new BigInteger(SHA1(keywords[i]),16),user.getAu(),kgc.pkSet);
         }
         System.out.println("requestToUpload: uploadKeyword_nosql");

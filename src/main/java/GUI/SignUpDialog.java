@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 //class InputDialog extends JDialog{
-//    JButton okButton = new JButton("OK");
+//    JButton okButton = new JButton("O");
 //    JButton cancelButton = new JButton("CANCEL");
 //    JLabel tl;
 //    JTextField tf = new JTextField(10);
@@ -53,10 +53,10 @@ import javax.swing.*;
 //        tf.setEnabled(false);
 //    }
 //}
-class SignUpDialog extends JDialog{
-    JButton okButton = new JButton("OK");
-    JButton cancelButton = new JButton("CANCEL");
-    JRadioButton []userType = new JRadioButton[2];
+public class SignUpDialog extends JDialog{
+    public JButton okButton = new JButton("OK");
+    public JButton cancelButton = new JButton("CANCEL");
+    public JRadioButton []userType = new JRadioButton[2];
 
     public SignUpDialog(JFrame frame) {
         super(frame,"회원가입");

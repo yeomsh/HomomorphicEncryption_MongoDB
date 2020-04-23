@@ -35,6 +35,7 @@ public class NoSQLDB {
         keywordPEKS.drop();
         filePEKS.drop();
         zindex.drop();
+        user.drop();
     }
     public Object insertContract(Data data){
         Document filedoc = fileDoc(data.c2,data.c3);
@@ -65,7 +66,7 @@ public class NoSQLDB {
     }
 
     public Document userDoc(User user){
-        Document doc = new Document("id",user.id.toString(16)).append("ip",user.ip);
+        Document doc = new Document("id",user.id.toString(16)).append("ip",user.ip).append("userType",user.userType);
         return doc;
     }
 
@@ -99,6 +100,7 @@ public class NoSQLDB {
         Document userDoc = userDoc(u);
         user.insertOne(userDoc);
     }
+
     public void updateZString(Vector<Object> saveKeywordId, Object fileId){
 
         cursor = zindex.find().iterator();
@@ -131,6 +133,7 @@ public class NoSQLDB {
             }
             else
                 zindex.updateOne(eq("_id",saveKeywordId.get(i)),new Document("$push",new Document("file",new Document("fileId",fileId).append("exist","1"))));
+                //사람이름 2개일 때 2개가 추가되는지 확인하고 수정하기
         }
         zindex.updateMany(not(elemMatch("file",eq("fileId",fileId))), new Document("$push",new Document("file",new Document("fileId",fileId).append("exist","0"))));
         //file에 내가 넣으려는 fildId가 없으면 싹다 0으로 바꿈 -> 모든 keywordid에 대해 file (document)에 대해 {exitst:0 ,fileid: fileid} 추가

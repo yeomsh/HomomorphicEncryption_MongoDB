@@ -21,13 +21,18 @@ public class User {
 
     private BigInteger au;
 
+    public String userType = "";
     Random rand = new Random();
-    public User(){
 
+    public User(String ip, String userType){
+        this.ip = ip;
+        this.userType = userType;
+        makeQid();
     }
     public User(Document d){
         this.id = new BigInteger(d.get("id").toString(),16);
         this.ip = d.get("ip").toString();
+        this.userType = d.get("userType").toString();
     }
     public User(Vector<PublicKey> pkSet){
         File qidFile = new File("qid.txt");
@@ -43,6 +48,7 @@ public class User {
             //ip 찾기
             InetAddress ip = InetAddress.getLocalHost();
             this.ip = ip.getHostAddress(); //ip 지정
+            this.ip = "127.0.0.1";
             //qid 찾기
             if (!qidFile.exists()) { //서비스 이용 이력이 없는 유저 -> qid 생성해야함
                 System.out.println("qidFile 없음");
@@ -88,6 +94,7 @@ public class User {
         }
         BigInteger randVal = new BigInteger(20,rand);
         this.qid = this.id.multiply(randVal);
+        HomomorphicEncryption.server.nosqldb.insertUser(this);
     }
 
     //나중에 검색문에서 사용할 r 변경 가능하도록
@@ -118,6 +125,10 @@ public class User {
 
     public BigInteger getAu(){
         return au;
+    }
+
+    public String toString(){
+        return "ip : "+ this.ip + ", id : " + this.id + ", userType : " + this.userType;
     }
 
 }

@@ -247,6 +247,7 @@ public class MyFrame extends JFrame implements ActionListener {
 	 * pn[i].setPreferredSize(new Dimension(500,50)); } }
 	 */
 
+	//계약하기 누른 후 사업주 화면
 	public void makeContractPanel1() {
 
 		ITEMCOUNT = 6;
@@ -522,7 +523,7 @@ public class MyFrame extends JFrame implements ActionListener {
 			mode = "worker";
 			makeContractBtn.setEnabled(false);
 		} else if (e.getSource() == makeContractBtn) {
-			// changePanel(mcPanel);
+			changePanel(mcPanel);
 		} else if (e.getSource() == askedContractBtn) {
 			changePanel(acPanel);
 		} else if (e.getSource() == sigBtn1) {
@@ -533,18 +534,18 @@ public class MyFrame extends JFrame implements ActionListener {
 
 		} else if (e.getSource() == homeBtn) {
 			clear();
-			if (mode == "worker")
-				makeContractBtn.setEnabled(false);
-			askedContractBtn.setEnabled(false);
+//			if (mode == "worker")
+//				makeContractBtn.setEnabled(false);
+//			askedContractBtn.setEnabled(false);
 			changePanel(mainPanel);
 		} else {
-			for (int i = 0; i < contract.size(); i++) {
-				if (e.getSource() == contract.get(i)) {
-					ContractNumber = i;
-					checkContract = true;
-					JOptionPane.showMessageDialog(null, i);
-				}
-			}
+//			for (int i = 0; i < contract.size(); i++) {
+//				if (e.getSource() == contract.get(i)) {
+//					ContractNumber = i;
+//					checkContract = true;
+//					JOptionPane.showMessageDialog(null, i);
+//				}
+//			}
 		}
 	}
 

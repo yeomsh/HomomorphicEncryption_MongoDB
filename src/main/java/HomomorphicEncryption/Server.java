@@ -28,7 +28,7 @@ public class Server {
     public void loadUser(){
        uList = nosqldb.getUser();
        for (User u: uList){
-           System.out.println(u.id.toString() + " , "+u.ip);
+           System.out.println("server.loadUser : " + u.id.toString() + " , "+u.ip);
        }
     }
     public void addSystemAlpha(Data data) { //user alpha 지우고, system alpha 입히기
