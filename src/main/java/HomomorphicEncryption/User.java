@@ -34,6 +34,7 @@ public class User {
         this.ip = d.get("ip").toString();
         this.userType = d.get("userType").toString();
     }
+
     public User(Vector<PublicKey> pkSet){
         File qidFile = new File("qid.txt");
         FileWriter writer = null;
@@ -48,7 +49,7 @@ public class User {
             //ip 찾기
             InetAddress ip = InetAddress.getLocalHost();
             this.ip = ip.getHostAddress(); //ip 지정
-            this.ip = "127.0.0.1";
+            //this.ip = "127.0.0.1";
             //qid 찾기
             if (!qidFile.exists()) { //서비스 이용 이력이 없는 유저 -> qid 생성해야함
                 System.out.println("qidFile 없음");

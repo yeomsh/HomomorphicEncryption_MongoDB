@@ -19,11 +19,13 @@ public class Data {
         makeC1(a, pkSet.get(0));
         makeC2();
         makeC3(a,pkSet.get(0));
+
     }
 
     public Data(User user, BigInteger w, PublicKey x0){
         this.user = user;
         this.w = w;
+
         makeC1(user.getAu(), x0);
         makeC2();
         makeC3(user.getAu(), x0);
@@ -32,6 +34,7 @@ public class Data {
     public Data(User user, BigInteger w){
         this.user = user;
         this.w = w;
+
         makeC1(user.getAu(), user.pk.firstElement());
         makeC2();
         makeC3(user.getAu(), user.pk.firstElement());

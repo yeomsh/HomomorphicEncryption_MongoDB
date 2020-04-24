@@ -107,28 +107,28 @@ public class Database {
         return result;
     }
 
-    Vector<Contract> selectContract(String zString){
-        Vector<Contract> arr = new Vector<Contract>();
-        try{
-            String sql = "SELECT c2,c3 from "+mainDB+".Contract where contractId = ?";
-
-            pstmt = conn.prepareStatement(sql);
-            for(int i = 0; i<zString.length(); i++){
-                if (zString.charAt(i) == '1') {
-                    pstmt.setInt(1, i+1);
-                    rs = pstmt.executeQuery();
-                    while (rs.next()) {
-                        String c2 = rs.getString(1);
-                        String c3 = rs.getString(2);
-                        arr.add(new Contract(i + 1, new BigInteger(c2, 16), new BigInteger(c3, 16)));
-                    }
-                }
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return arr;
-    }
+//    Vector<Contract> selectContract(String zString){
+//        Vector<Contract> arr = new Vector<Contract>();
+//        try{
+//            String sql = "SELECT c2,c3 from "+mainDB+".Contract where contractId = ?";
+//
+//            pstmt = conn.prepareStatement(sql);
+//            for(int i = 0; i<zString.length(); i++){
+//                if (zString.charAt(i) == '1') {
+//                    pstmt.setInt(1, i+1);
+//                    rs = pstmt.executeQuery();
+//                    while (rs.next()) {
+//                        String c2 = rs.getString(1);
+//                        String c3 = rs.getString(2);
+//                        arr.add(new Contract(i + 1, new BigInteger(c2, 16), new BigInteger(c3, 16)));
+//                    }
+//                }
+//            }
+//        }catch (SQLException e){
+//            e.printStackTrace();
+//        }
+//        return arr;
+//    }
 
     void updateZindex(int id, String zString){
         try{

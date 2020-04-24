@@ -3,6 +3,7 @@ package HomomorphicEncryption;
 import com.mongodb.client.*;
 import org.bson.Document;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
+import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -37,8 +38,8 @@ public class NoSQLDB {
         zindex.drop();
         user.drop();
     }
-    public Object insertContract(Data data){
-        Document filedoc = fileDoc(data.c2,data.c3);
+    public Object insertContract(Data data,JSONObject file){
+        Document filedoc = fileDoc(data.c2,data.c3,file);
         filePEKS.insertOne(filedoc);
         data.setFileId(filedoc.get("_id"));
         return filedoc.get("_id");
@@ -58,10 +59,10 @@ public class NoSQLDB {
         return doc;
     }
 
-    public Document fileDoc(BigInteger c2, BigInteger c3){
+    public Document fileDoc(BigInteger c2, BigInteger c3, JSONObject file){
         Document doc = new Document("c2", c2.toString(16))
                 .append("c3", c3.toString(16))
-                .append("file","");
+                .append("file",file);
         return doc;
     }
 
@@ -76,10 +77,10 @@ public class NoSQLDB {
         return doc;
     }
 
-    public Document fileDoc(String c2, String c3){
+    public Document fileDoc(String c2, String c3, JSONObject file){
         Document doc = new Document("c2", c2)
                 .append("c3", c3)
-                .append("file","");
+                .append("file",file);
         return doc;
     }
 

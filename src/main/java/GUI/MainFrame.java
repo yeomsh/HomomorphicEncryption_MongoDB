@@ -124,10 +124,11 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 			contractGUI.setStep1Contract(1);
 		}
 	}
-	public void showKeywordDialog() {
-		String name = JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
+	public String showKeywordDialog() {
+		String keyword = JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
 //		keywordDialog.okButton.addActionListener(this);
 //		keywordDialog.setVisible(true);
+		return keyword;
 	}
 	public String showInitDialog() throws UnknownHostException {
 		InetAddress ip = InetAddress.getLocalHost();
@@ -172,7 +173,7 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 
 		}
 		else if(source == mpSearch.button) {
-			showKeywordDialog();
+//			showKeywordDialog();
 		}
 
 //		else if(source == initDialog.okButton) {

@@ -2,6 +2,8 @@ package HomomorphicEncryption;
 
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
+import org.json.simple.JSONObject;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -106,7 +108,7 @@ public class Server {
     }
 
     //계약서 업로드
-    public Object uploadContract_nosql(Data data) {
+    public Object uploadContract_nosql(Data data, JSONObject file) {
         //만약 updateData 함수를 바꾼다면 여기서 updateData한 다음 파일 추가
         //단, 복사본을 생성해서 바꾼 데이터로 사용
 
@@ -115,7 +117,7 @@ public class Server {
 
         //파일 업로드
         //file id값 기억 필요 (data에 fileid추가)
-        Object fileId = nosqldb.insertContract(copydata);
+        Object fileId = nosqldb.insertContract(copydata,file);
 
         return fileId;
     }
@@ -159,12 +161,14 @@ public class Server {
     }
 
 
-    public Vector<Object> searchKeyword_nosql(Data data) {
+    public Vector<Contract> searchKeyword_nosql(Data data) {
         //         3. 검색
         //            1) kewordPEKS로 있는 키워드 찾기 -> keywordId기억
         //            2) 해당 keywordId 중 file의 string 만들어서 비교
         //            3) 1인 애들의 fileId로 ci2,ci3 비교하기
-        Vector<Object> correctFile = new Vector<>();
+        //Vector<Object> correctFile = new Vector<>();
+
+        Vector<Contract> keywordFile = new Vector<>();
 
         MongoCursor<Document> cursor;
         Vector<Object> saveKeywordId = new Vector<>();
@@ -225,14 +229,14 @@ public class Server {
                         Contract res = new Contract(d);
                         //c2 c3비교
                         if (keywordTest(data, res)) { //파일에 속한 권한 비교
-                            correctFile.add(res._id);
+                            keywordFile.add(res);
                             //                      System.out.println(res.id+ "번째 파일이 키워드/ 권한 동일함");
                         }
                     }
                 }
             }
         }
-        System.out.println("this is the correctFile : " + correctFile);
-        return correctFile;
+        System.out.println("this is the correctFile : " + keywordFile.toString());
+        return keywordFile;
     }
 }

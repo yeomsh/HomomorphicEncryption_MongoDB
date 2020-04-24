@@ -7,6 +7,7 @@ import util.*;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.math.BigInteger;
 import java.net.UnknownHostException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -115,6 +116,12 @@ public class CSManager {
     }
 
 
+    public Vector<Contract> searchKeyword(String keyword, User userA){
+        Vector<Contract> keywordFile = new Vector<>();
+        keywordFile = he.searchKeyword(userA,keyword);
+        return keywordFile;
+    }
+
     public static void main(String[] args) throws UnknownHostException {
         CSManager t = new CSManager();
     }
@@ -143,7 +150,22 @@ class CMActionListener implements ActionListener, WindowListener {
 
         }
         else if(source == frame.mpSearch.button) {
-            //frame.showKeywordDialog();
+            Vector<Contract> keywordFile = new Vector<>();
+            User userA = new User(csManager.he.kgc.pkSet);
+            userA.qid = new BigInteger("cb066fe11fed84bc5dcb04bbb", 16);
+
+            //csManager.he.requestToUpload(userA,new String[]{"a","c"});
+            String keyword = frame.showKeywordDialog();
+            frame.addLog("검색할 키워드 : " + keyword);
+            if(keyword!=null){
+                keywordFile = csManager.searchKeyword(keyword,userA);
+                for(Contract i : keywordFile)
+                    frame.addLog(i.toString() + "\n file : " + i.file);
+                //키워드 검색하기
+                //검색끝나면 파일 보여주는 항목 update한 후 보여주기
+                //뭔가 콤보박스 선택못하게 하거나 안보이게 한 후 파일 다 받아온 다음에 쓸 수 있게
+
+            }
             System.out.println("mpSearch");
 
         }

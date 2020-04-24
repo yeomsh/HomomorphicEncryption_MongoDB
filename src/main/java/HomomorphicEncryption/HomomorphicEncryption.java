@@ -2,6 +2,7 @@ package HomomorphicEncryption;
 
 import com.mongodb.client.*;
 import org.bson.Document;
+import org.json.simple.JSONObject;
 
 import java.lang.reflect.Array;
 import java.math.BigInteger;
@@ -34,12 +35,16 @@ public class HomomorphicEncryption {
 //
 //
         userA.setAu(kgc.shareAlpha()); //kgc -> user에 alpha 공유 (임의로)4
-//        userA.qid = new BigInteger("cb066fe11fed84bc5dcb04c08", 16);
+        userA.qid = new BigInteger("cb066fe11fed84bc5dcb04bbb", 16);
 
         String a = "최승연연";
         String b = "염상희희";
 
-       // requestToUpload(userA, new String[]{a, b});
+        JSONObject file = new JSONObject();
+        file.put("key","value");
+        file.put("key2","염");
+
+        requestToUpload(userA, new String[]{"a", "b"},file);
         //현재 키워드 20개
         //파일 10개
 //        for (int i = 0; i < 500; i++)
@@ -56,8 +61,10 @@ public class HomomorphicEncryption {
 //            requestToUpload(userA, new String[]{a,b + 1});
 //        }
 
-       searchKeyword(userA,a);
+       Vector<Contract> c = searchKeyword(userA,"a");
 
+       for(Contract cont : c)
+           System.out.println(cont.toString());
         //일단 테스트 용
         /*
         1. keywordPEKS, filePEKS, zindex 생성
@@ -106,12 +113,15 @@ public class HomomorphicEncryption {
     }
 
     //파일 업로드
-    public static void requestToUpload(User user, String[] keywords){
+    public static void requestToUpload(User user, String[] keywords, JSONObject file){
+        user.setAu(kgc.shareAlpha());
         long start = System.currentTimeMillis();
         //근로자 or 점주 둘 중한명만 파일등록함
         user.ChangeUserR();
-
-        Object fileId = server.uploadContract_nosql(new Data(user, new BigInteger(SHA1(keywords[0]),16),user.getAu(),kgc.pkSet));
+        System.out.println("user.pkset " + user.pk);
+        System.out.println("user.getAu() : " + user.getAu());
+        System.out.println("kgc.pkset0 : " + kgc.pkSet.get(0));
+        Object fileId = server.uploadContract_nosql(new Data(user, new BigInteger(SHA1(keywords[0]),16),user.getAu(),kgc.pkSet),file);
         //키워드 기반 암호문 생성
         Data[] datas = new Data[2];
         for(int i = 0; i<2;i++){ //한 파일에 키워드가 2개니까 !
@@ -130,14 +140,16 @@ public class HomomorphicEncryption {
     }
 
     //키워드 검색
-    public static void searchKeyword(User user, String keyword){
+    public static Vector<Contract> searchKeyword(User user, String keyword){
+        user.setAu(kgc.shareAlpha());
         long start = System.currentTimeMillis();
-        Vector<Object> correctFile = new Vector<>();
+        user.ChangeUserR();
+        Vector<Contract> keywordFile = new Vector<>();
         Data data = new Data(user, new BigInteger(SHA1(keyword),16));
-        correctFile = server.searchKeyword_nosql(data);
+        keywordFile = server.searchKeyword_nosql(data);
         long end = System.currentTimeMillis();
 
         System.out.println("time to find file : " + (end-start));
-
+        return keywordFile;
     }
 }
