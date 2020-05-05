@@ -2,13 +2,13 @@ package HomomorphicEncryption;
 
 import java.math.BigInteger;
 
-public class PublicKey implements Comparable<PublicKey>{
+public class AGCDPublicKey implements Comparable<AGCDPublicKey>{
     private BigInteger p;
     private BigInteger q;
 
     public BigInteger r;
     public BigInteger pk;
-    public PublicKey(BigInteger p, BigInteger q, BigInteger r){
+    public AGCDPublicKey(BigInteger p, BigInteger q, BigInteger r){
         this.p = p;
         this.q = q;
         this.r = r;
@@ -35,8 +35,8 @@ public class PublicKey implements Comparable<PublicKey>{
     }
 
     @Override
-    public int compareTo(PublicKey publicKey) {
+    public int compareTo(AGCDPublicKey AGCDPublicKey) {
         //return this.getPublicKey().compareTo(publicKey.getPublicKey()); //오름차순
-        return publicKey.pk.compareTo(this.pk); //내림차순
+        return AGCDPublicKey.pk.compareTo(this.pk); //내림차순
     }
 }

@@ -17,7 +17,7 @@ public class User {
     public BigInteger id;
     public String ip;
     public BigInteger r; //data만들 때마다 랜덤으로 생성
-    public Vector<PublicKey> pk = new Vector<>();
+    public Vector<AGCDPublicKey> pkSet = new Vector<>();
 
     private BigInteger au;
 
@@ -35,7 +35,7 @@ public class User {
         this.userType = d.get("userType").toString();
     }
 
-    public User(Vector<PublicKey> pkSet){
+    public User(Vector<AGCDPublicKey> pkSet){
         File qidFile = new File("qid.txt");
         FileWriter writer = null;
         BufferedWriter bWriter = null;
@@ -104,20 +104,20 @@ public class User {
     }
 
     //사용자마다 랜덥의 public key set 만드는 함수
-    void makeUserKeySet(Vector<PublicKey> pkSet){
-        this.pk.add(pkSet.firstElement());
+    void makeUserKeySet(Vector<AGCDPublicKey> pkSet){
+        this.pkSet.add(pkSet.firstElement());
         boolean usedpk[] = new boolean[pkSet.size()]; //default = false
         usedpk[0] = true; //x0 넣기
-        while(this.pk.size() < pkSize) {
+        while(this.pkSet.size() < pkSize) {
             int pknum = (int)(Math.random()*pkSet.size());
             if(usedpk[pknum]) continue;
             usedpk[pknum] = true;
-            this.pk.add(pkSet.get(pknum));
+            this.pkSet.add(pkSet.get(pknum));
         }
         System.out.println("user-selected pkSet's index : " + usedpk);
-        for(int i = 0; i<this.pk.size(); i++) {
-            if (i == 0) System.out.println("x0(hexadecimal) : " + this.pk.get(i).pk.toString(16) );
-            else System.out.println(i + "(hexadecimal) : " + this.pk.get(i).pk.toString(16) );
+        for(int i = 0; i<this.pkSet.size(); i++) {
+            if (i == 0) System.out.println("x0(hexadecimal) : " + this.pkSet.get(i).pk.toString(16) );
+            else System.out.println(i + "(hexadecimal) : " + this.pkSet.get(i).pk.toString(16) );
         }
     }
     public void setAu(BigInteger au){

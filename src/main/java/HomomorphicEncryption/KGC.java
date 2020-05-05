@@ -25,7 +25,7 @@ public class KGC {
     private  BigInteger p = new BigInteger("1090aab060716f966f554558a15e41f6c05cb1159bc6aa7eb9077471b35f1599bf3f0d22b4ce61d85dd9f4150701d23999a15f24f2b8befb100f8a156b15d71a3a766a77665823c7f227c1b367b97394b417fe1092a8173d7accbf2270a6c39315a3ee3578d828550b1599a14b811f017482eb8ed88d9f418abb0fc20a2df00479351cf6443df344269bd7aee8b6fc0f21069b53c95c15fc248558f86ff79574b2e07e5c7ca359ce3a16b68ecbbd0f4ff8f04347ba713e53c81aad9be4c1b3a06da29cba7aa1c81ca9f6213ebf539a5dacf220e79957399dc8a06c417d57272de9b0ea7f72d8841ac22a5f98749cd91006d414a623f7b2bd3485f",16); // 비트의 수가 eta (lamda^2)
     private  BigInteger a = new BigInteger("174682bb762fb605edd9dea02a610fd6cc6ad6ea2b",16); //system alpha
 
-    public Vector<PublicKey> pkSet = new Vector<>();
+    public Vector<AGCDPublicKey> pkSet = new Vector<>();
 
     private BigInteger au;
 
@@ -63,7 +63,7 @@ public class KGC {
         //pkSet 뽑기 (kgc의 공개키)
         BigInteger qMax = new BigInteger("2").pow(gamma.intValue()).divide(p);
         for(int i = 0; i<pkSetSize.intValue(); i++){
-            pkSet.add(new PublicKey(p,new BigInteger(qMax.bitLength()-1,r),new BigInteger(lamda.intValue()-1,r).multiply(new BigInteger("-1").pow(new BigInteger(1,r).intValue()))));
+            pkSet.add(new AGCDPublicKey(p,new BigInteger(qMax.bitLength()-1,r),new BigInteger(lamda.intValue()-1,r).multiply(new BigInteger("-1").pow(new BigInteger(1,r).intValue()))));
         }
 
         Collections.sort(pkSet); //X0 is the largest element
@@ -99,7 +99,7 @@ public class KGC {
 
         return au;
     }
-    public PublicKey checkX0Condition(PublicKey x0, BigInteger alpha){
+    public AGCDPublicKey checkX0Condition(AGCDPublicKey x0, BigInteger alpha){
         System.out.println(x0.pk.toString(16));
         System.out.println(x0.r.toString(16));
         if (!x0.pk.mod(p).equals(alpha)){ //X0 mod p = a 조건 체크

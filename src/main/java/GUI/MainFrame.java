@@ -124,6 +124,7 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 			contractGUI.setStep1Contract(1);
 		}
 	}
+
 	public String showKeywordDialog() {
 		String keyword = JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
 //		keywordDialog.okButton.addActionListener(this);

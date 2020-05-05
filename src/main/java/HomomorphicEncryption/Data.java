@@ -13,7 +13,7 @@ public class Data {
     public Boolean isExist = false;
     public Object fileId = null;
 
-    public Data(User user, BigInteger w, BigInteger a, Vector<PublicKey> pkSet){
+    public Data(User user, BigInteger w, BigInteger a, Vector<AGCDPublicKey> pkSet){
         this.user = user;
         this.w = w;
         makeC1(a, pkSet.get(0));
@@ -22,7 +22,7 @@ public class Data {
 
     }
 
-    public Data(User user, BigInteger w, PublicKey x0){
+    public Data(User user, BigInteger w, AGCDPublicKey x0){
         this.user = user;
         this.w = w;
 
@@ -35,9 +35,9 @@ public class Data {
         this.user = user;
         this.w = w;
 
-        makeC1(user.getAu(), user.pk.firstElement());
+        makeC1(user.getAu(), user.pkSet.firstElement());
         makeC2();
-        makeC3(user.getAu(), user.pk.firstElement());
+        makeC3(user.getAu(), user.pkSet.firstElement());
     }
 
     public Data(BigInteger c1, BigInteger c2, BigInteger c3){
@@ -62,7 +62,7 @@ public class Data {
         }
         return ci.mod(user.getAu()).add(systemAlpha.multiply(sumPk()));
     }
-    void makeC1(BigInteger a, PublicKey x0){
+    void makeC1(BigInteger a, AGCDPublicKey x0){
         x0 = HomomorphicEncryption.kgc.checkX0Condition(x0,user.getAu());
         c1 = w.add(user.r.multiply(user.qid)).add(a.multiply(sumPk())); //w+(user.r*user.qid)+(a*sumPk);
         System.out.println("w(hexadecimal) = " + w.toString(16) + ", r(hexadecimal) = " + user.r.toString(16) + ", qid(hexadecimal) = " + user.qid.toString(16));
@@ -75,7 +75,7 @@ public class Data {
         c2 = hash(user.r.multiply(user.qid));
         //System.out.println("c2(2^hexadecimal): 2^"+c2.toString(16));
     }
-    void makeC3(BigInteger a, PublicKey x0){
+    void makeC3(BigInteger a, AGCDPublicKey x0){
         //ci1계산하기 (mod범위에 맞추어서)
         x0 = HomomorphicEncryption.kgc.checkX0Condition(x0,user.getAu());
         c3 = user.qid.add(user.r.multiply(user.qid)).add(a.multiply(sumPk())); //user.qid+(user.r*user.qid)+(a*sumPk);
@@ -84,10 +84,10 @@ public class Data {
     }
     public BigInteger sumPk(){
         BigInteger sumPk = BigInteger.ZERO;
-        for (PublicKey publicKey : user.pk) {
-            sumPk = sumPk.add(publicKey.pk);
+        for (AGCDPublicKey AGCDPublicKey : user.pkSet) {
+            sumPk = sumPk.add(AGCDPublicKey.pk);
         }
-        return sumPk.subtract(user.pk.firstElement().pk);
+        return sumPk.subtract(user.pkSet.firstElement().pk);
     }
     public static BigInteger hash(BigInteger exponent){
         //return BigInteger.valueOf(2).pow(exponent.intValue());

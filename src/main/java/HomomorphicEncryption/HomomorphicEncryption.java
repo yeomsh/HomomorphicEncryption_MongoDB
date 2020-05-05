@@ -1,17 +1,10 @@
 package HomomorphicEncryption;
 
-import com.mongodb.client.*;
-import org.bson.Document;
 import org.json.simple.JSONObject;
 
-import java.lang.reflect.Array;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Vector;
 
-import static com.mongodb.client.model.Filters.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -118,7 +111,7 @@ public class HomomorphicEncryption {
         long start = System.currentTimeMillis();
         //근로자 or 점주 둘 중한명만 파일등록함
         user.ChangeUserR();
-        System.out.println("user.pkset " + user.pk);
+        System.out.println("user.pkset " + user.pkSet);
         System.out.println("user.getAu() : " + user.getAu());
         System.out.println("kgc.pkset0 : " + kgc.pkSet.get(0));
         Object fileId = server.uploadContract_nosql(new Data(user, new BigInteger(SHA1(keywords[0]),16),user.getAu(),kgc.pkSet),file);

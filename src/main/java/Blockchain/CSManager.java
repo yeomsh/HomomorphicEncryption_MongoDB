@@ -106,6 +106,8 @@ public class CSManager {
                 }
             }
             frame.addLog("등록된 사용자 로그인 : " + myUser.toString());
+            //qid바로 가져와서 user에 저장
+            //setAu와 pkset정하는 것은 필요할 때 init()
         }
         else{
             JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
@@ -183,6 +185,8 @@ class CMActionListener implements ActionListener, WindowListener {
 
             frame.signUpDialog.setVisible(false);
             frame.addLog("사용자 회원가입 완료 : " + csManager.myUser.toString());
+            //pk,sk만들기 -> 파일 만들고
+
         }
 
     }
