@@ -21,6 +21,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Scanner;
 
+import HomomorphicEncryption.User;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -42,9 +43,7 @@ public class KeyGenerator {
 	public void makeKey() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
 			FileNotFoundException, IOException {
 		Security.addProvider(new BouncyCastleProvider());
-
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("EC", bouncyCastleProvider);
-
 		ECGenParameterSpec ecsp = new ECGenParameterSpec(ALGORITHM);
 		generator.initialize(ecsp, new SecureRandom());
 		KeyPair keyPair = generator.generateKeyPair();
@@ -52,7 +51,7 @@ public class KeyGenerator {
 		writePemFile(keyPair.getPublic(), "EC PUBLIC KEY", "public.pem");
 	}
 
-	public void makeKey(PublicKey pk, String name) throws FileNotFoundException, IOException {
+	public void makeKey(PublicKey pk, String name) throws FileNotFoundException, IOException { //암호학적으로 public이 옳지 않느건가 . . .?
 		writePemFile(pk, "EC PUBLIC KEY", name);
 	}
 

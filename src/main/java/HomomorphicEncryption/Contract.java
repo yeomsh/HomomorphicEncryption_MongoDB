@@ -9,7 +9,7 @@ import org.json.simple.parser.JSONParser;
 
 import java.math.BigInteger;
 
-public class Contract {
+public class Contract { //data class의 contract 상속으로 바꾸기
     public int id;
     public Object _id;
     //public ?? file

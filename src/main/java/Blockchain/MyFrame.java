@@ -87,8 +87,6 @@ public class MyFrame extends JFrame implements ActionListener {
 	protected JButton sigBtn2 = new JButton("서명하고 전송하기");
 
 	protected JButton OKBtn2 = new JButton("확인하기");
-
-
 	public Font bigFont = search.getFont().deriveFont(Font.BOLD, 40);
 
 	protected Color c_blue = new Color(76, 116, 185);
@@ -367,7 +365,6 @@ public class MyFrame extends JFrame implements ActionListener {
 
 	}
 	public void askedContractPanel() {
-
 		acPanel.setBackground(c_blue);
 		contractTitle.setFont(bigFont);
 		contractTitle.setPreferredSize(new Dimension(400, 100));
@@ -422,13 +419,9 @@ public class MyFrame extends JFrame implements ActionListener {
 			pn[i].setBackground(Color.white);
 			pn[i].setPreferredSize(new Dimension(500, 50));
 		}
-
-//
-
 	}
 
 	public void askedContractPanel2() {
-
 		acPanel.setBackground(c_blue);
 		contractTitle.setFont(bigFont);
 		contractTitle.setPreferredSize(new Dimension(400, 100));
@@ -484,8 +477,6 @@ public class MyFrame extends JFrame implements ActionListener {
 			pn[i].setBackground(Color.white);
 			pn[i].setPreferredSize(new Dimension(500, 50));
 		}
-
-//
 
 	}
 

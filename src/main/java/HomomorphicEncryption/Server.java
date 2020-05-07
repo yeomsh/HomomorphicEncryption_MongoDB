@@ -26,11 +26,10 @@ public class Server {
     public ArrayList<User> getuList() {
         return uList;
     }
-
     public void loadUser(){
-       uList = nosqldb.getUser();
+       uList = nosqldb.getUserList();
        for (User u: uList){
-           System.out.println("server.loadUser : " + u.id.toString() + " , "+u.ip);
+//           System.out.println("server.loadUser : " + u.id.toString() + " , "+u.ip);
        }
     }
     public void addSystemAlpha(Data data) { //user alpha 지우고, system alpha 입히기

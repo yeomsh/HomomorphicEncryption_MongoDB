@@ -40,7 +40,7 @@ public class MainPannel extends JPanel {
         }
         this.add(button);
     }
-    void setComboBoxList(String[] list) {
+    public void setComboBoxList(String[] list) {
         this.contractList = list;
         //this.comboBoxContract.removeAllItems();
         for(int i=0; i<contractList.length; i++) {

@@ -1,30 +1,25 @@
 package GUI;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.net.InetAddress;
 
 
 enum Mode{
 	CONTRACT_NEW, CONTRACT_CONTINUE, CONTRACT_SEARCH, REFRESH, INIT
 }
-public class MainFrame extends JFrame implements ChangeListener, ActionListener{
+
+public class MainFrame extends JFrame{
 	public static int WIDTH = 500;
 	public static int HEIGHT = 800;
 	public static int PANNEL_WIDTH = WIDTH -15;
 
 	//현재 선택된 탭
-	int idxTab=0;
+	public int idxTab=0;
 	//상단 탭
-	JTabbedPane jTab = null;
+	public JTabbedPane jTab = null;
 	//패널
 	public MainPannel mpContinue = null;
 	public MainPannel mpSearch = null;
@@ -36,16 +31,17 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 //	public InputDialog keywordDialog = new InputDialog(this,"검색할 키워드를 입력해주세요",Mode.CONTRACT_SEARCH);
 //	public InputDialog initDialog = new InputDialog(this,"로그인",Mode.INIT);
 	public SignUpDialog signUpDialog = new SignUpDialog(this);
-	//계약서 작성창
-	public ContractGUI contractGUI;
 
 	public MainFrame() {
 		super("근로계약서 시스템");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(WIDTH, HEIGHT);
 		this.setLayout(null);
+		//init handler
 
-		//init top tab, mainpannel
+		//init mainPanel
+		makePannel();
+		//init top tab
 		makeTopTab();
 		//init logConsole
 		makeLogConsole();
@@ -53,20 +49,32 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 		this.setVisible(true);
 		//showInitDialog();
 	}
-
+	public void setListener(ActionListener mListener){
+		//mListener = new CSActionListener(this, this);
+		//버튼에 리스너들 달기
+		mpNew.button.addActionListener(mListener);
+		mpContinue.button.addActionListener(mListener);
+		mpSearch.button.addActionListener(mListener);
+		signUpDialog.okButton.addActionListener(mListener);
+	//	jTab.addChangeListener(mListener);
+	//	addWindowListener(mListener);
+	}
+	public void setListener(ChangeListener mListener){
+		jTab.addChangeListener(mListener);
+	}
 	public void makePannel() {
+
 		mpNew = new MainPannel(Mode.CONTRACT_NEW, "시작하기");
-		mpNew.button.addActionListener(this);
+	//	mpNew.button.addActionListener(mainListener);
 		mpContinue = new MainPannel(Mode.CONTRACT_CONTINUE,"이어하기");
-		mpContinue.button.addActionListener(this);
+	//	mpContinue.button.addActionListener(mainListener);
 		mpSearch = new MainPannel(Mode.CONTRACT_SEARCH,"확인하기");
-		mpSearch.button.addActionListener(this);
+	//	mpSearch.button.addActionListener(mainListener);
 	}
 	public void makeTopTab() {
-		makePannel();
 		//상단 탭(계약 시작하기/ 계약 이어하기/ 검색하기/ 동기화)
 		jTab = new JTabbedPane();
-		jTab.addChangeListener(this);
+	//	jTab.addChangeListener(mainListener);
 		jTab.addTab("계약서 검색하기", mpSearch);
 		jTab.addTab("계약 작성 시작하기", mpNew);
 		jTab.addTab("계약 작성 이어하기", mpContinue);
@@ -88,74 +96,6 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 		taLog.append(log+"\n");
 		taLog.setCaretPosition(taLog.getDocument().getLength());
 	}
-	public void tabStateChanged() {
-		if (jTab.getSelectedIndex() == 3) { // 선택한 탭이 "refresh" 라면 "기존"탭으로 유지하기
-			if (idxTab == 2) {// 현재 탭이 "계약 이어하기"
-				//relaod data
-				//데이터 받아온거 뿌리기
-				mpContinue.setComboBoxList(new String[] {"555","666","777"});
-			}
-			else {
-
-			}
-		}
-		else {
-			idxTab = jTab.getSelectedIndex();
-		}
-		jTab.setSelectedIndex(idxTab);
-		System.out.println("tabStateChanged: "+idxTab);
-	}
-
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		if (e.getSource() == this.jTab){
-			this.tabStateChanged();
-		}
-	}
-	public void showIpDialog() {
-
-		String name = JOptionPane.showInputDialog("계약할 사람의 ip를 입력하세요.");
-//		ipDialog.okButton.addActionListener(this);
-//		ipDialog.setVisible(true);
-		if(name==null)
-			JOptionPane.showMessageDialog(null, "계약서 작성을 취소합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
-		else {
-			contractGUI = new ContractGUI();
-			contractGUI.setStep1Contract(1);
-		}
-	}
-
-	public String showKeywordDialog() {
-		String keyword = JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
-//		keywordDialog.okButton.addActionListener(this);
-//		keywordDialog.setVisible(true);
-		return keyword;
-	}
-	public String showInitDialog() throws UnknownHostException {
-		InetAddress ip = InetAddress.getLocalHost();
-		String myIp = ip.getHostAddress();
-		int select = JOptionPane.showConfirmDialog(null,"my Ip : "+myIp,"로그인",JOptionPane.OK_CANCEL_OPTION);
-		System.out.println(select);
-		if(select==2) {
-			JOptionPane.showMessageDialog(null, "프로그램을 종료합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
-			System.exit(0);
-		}
-		//ip확인후 없으면 else내용 진행
-//		else
-//			JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
-//		//if(name.equals("true"))
-//			showSignUpDialog();
-
-//		initDialog.okButton.addActionListener(this);
-//		initDialog.setVisible(true);
-		//ip tf채워넣기
-		return myIp;
-	}
-	public void showSignUpDialog() {
-
-		signUpDialog.okButton.addActionListener(this);
-		signUpDialog.setVisible(true);
-	}
 
 	public static void main(String[] args) {
 		MainFrame frame = new MainFrame();
@@ -164,42 +104,7 @@ public class MainFrame extends JFrame implements ChangeListener, ActionListener{
 		}
 		frame.mpContinue.setComboBoxList(new String[] {"111","222","333"});
 	}
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		if (source == mpNew.button){
-			showIpDialog();
-		}
-		else if(source == mpContinue.button) {
-
-		}
-		else if(source == mpSearch.button) {
-//			showKeywordDialog();
-		}
-
-//		else if(source == initDialog.okButton) {
-//			initDialog.setVisible(false);
-//			showSignUpDialog();
-//		}
-//		else if(source == ipDialog.okButton) {
-//			contractGUI = new ContractGUI();
-//			contractGUI.setStep1Contract(1);
-//		}
-		else if(source == signUpDialog.okButton) {
-//			String userType = null;
-//			if(signUpDialog.userType[0].isSelected())
-//				userType = "점주";
-//			else if(signUpDialog.userType[1].isSelected())
-//				userType = "근로자";
-//
-//			JOptionPane.showMessageDialog(null, userType+"로 회원가입 완료했습니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
-//
-//			signUpDialog.setVisible(false);
-//			addLog(userType+"로 회원가입 완료");
-		}
-//		else if(source == keywordDialog.okButton) {
-//
-//		}
-	}
 }
+
+
 

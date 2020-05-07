@@ -3,12 +3,24 @@ package HomomorphicEncryption;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.util.Base64;
 import java.util.Random;
 import java.util.Vector;
 import java.math.BigInteger;
-import org.bson.Document;
 
-public class User {
+import netscape.javascript.JSObject;
+import org.bson.Document;
+import org.json.simple.JSONObject;
+import util.KeyGenerator;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+public class User  { //extends dataclass.user로 바꾸기
     private int qidRange = 100;
     private int rRange = 60;
     private int pkSize = 5;
@@ -22,17 +34,19 @@ public class User {
     private BigInteger au;
 
     public String userType = "";
+    public PublicKey publicKey;
+    private PrivateKey privateKey;
     Random rand = new Random();
 
     public User(String ip, String userType){
         this.ip = ip;
         this.userType = userType;
-        makeQid();
+        //makeQid();
     }
     public User(Document d){
-        this.id = new BigInteger(d.get("id").toString(),16);
+   //     this.id = new BigInteger(d.get("id").toString(),16);
         this.ip = d.get("ip").toString();
-        this.userType = d.get("userType").toString();
+     //   this.userType = d.get("userType").toString();
     }
 
     public User(Vector<AGCDPublicKey> pkSet){
@@ -97,7 +111,29 @@ public class User {
         this.qid = this.id.multiply(randVal);
         HomomorphicEncryption.server.nosqldb.insertUser(this);
     }
-
+    public void setKey(PublicKey publicKey, PrivateKey privateKey){
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+    }
+    String encrypteData(JSONObject data) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException {
+        byte[] byteData = data.toString().getBytes(StandardCharsets.UTF_8);
+        System.out.println(publicKey.getAlgorithm());
+        Cipher cipher = Cipher.getInstance("DES",KeyGenerator.BOUNCY_CASTLE_PROVIDER);
+        //EC", "SunEC"
+        //"ECIESwithAES",KeyGenerator.BOUNCY_CASTLE_PROVIDER
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] bytePlain= cipher.doFinal(byteData);
+        return Base64.getEncoder().encodeToString(bytePlain);
+    }
+    String decrypteData(String encrytedData) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnsupportedEncodingException {
+        Cipher cipher = Cipher.getInstance("ECDSA", KeyGenerator.BOUNCY_CASTLE_PROVIDER);
+        byte[] byteEncrypted = Base64.getDecoder().decode(encrytedData.getBytes());
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] bytePlain = cipher.doFinal(byteEncrypted);
+        String decrypted = new String(bytePlain, "utf-8");
+        return decrypted;
+        //decrypted 를 JSON OBJECT로 만드는 작어이 필요함
+    }
     //나중에 검색문에서 사용할 r 변경 가능하도록
     void ChangeUserR(){
         r = new BigInteger(rRange,rand);

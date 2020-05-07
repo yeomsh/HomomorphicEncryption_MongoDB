@@ -3,10 +3,11 @@ package GUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Scanner;
 
 import javax.swing.*;
 
+import Blockchain.BCManager;
+import DataClass.Contract;
 import org.json.simple.JSONObject;
 
 public class ContractGUI extends JFrame {
@@ -38,8 +39,7 @@ public class ContractGUI extends JFrame {
    ButtonGroup wage2_1G, wage3_1G, wage5G;
    // JTextField txtHp1, txtHp2, txtHp3;
    // JCheckBox cbMale,cbFeMale;
-
-   int whatStep = 0;
+   Contract contract;
 
    JCheckBox[] workDayCb = new JCheckBox[7];
    JCheckBox[] restDayCb = new JCheckBox[7];
@@ -65,11 +65,305 @@ public class ContractGUI extends JFrame {
    JTextField txtAddr, txtAge;
    JButton btnSubmit, btnCancel;
 
+   public ContractGUI(BCManager manager){ //BCManager 에서 호출됨
+      this();
+      contract = manager.contract;
+      setPanel();
+      btnSubmit.addActionListener(manager.eventHandler);
+   }
+
    public ContractGUI() {
 
       super("근로계약서 작성");
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       setLayout(new BorderLayout());
+      makePanel();
+      setResizable(false);
+      setVisible(false);
+
+
+//      btnSubmit.addActionListener(new ActionListener() { //이걸 main을 빼야할듯 합니다만
+//         public void actionPerformed(ActionEvent e) {
+//
+//      });
+
+      btnCancel.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(null,"계약서 작성을 취소합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
+            setVisible(false);
+            System.out.println("취소");
+            //System.exit(0);
+            // 추가할 내용
+            // 공개키, 비밀키, id, qid, userType, ip 생성 후
+            // user 데베에 추가
+
+         }
+      });
+
+   }
+
+   public void setPanel(){
+      switch (contract.step){
+         case 0:
+            setStep1Contract();
+            break;
+         case 2:
+            setStep2Contract(contract.data);
+            break;
+         case 3:
+            setStep3Contract(contract.data);
+            break;
+         case 4:
+            setStep4Contract(contract.data);
+            break;
+         default:
+            break;
+      }
+   }
+   // step1 점주가 근로계약서 작성
+   public void setStep1Contract() {
+
+      setVisiableAllFalse();
+
+      oNameTxt.setEnabled(true);
+      contractTermStartPl.setEnabled(true);
+      contractTermEndPl.setEnabled(true);
+      placeTxt.setEnabled(true);
+      contentTxt.setEnabled(true);
+      for (MyTimer tm : timer)
+         tm.setEnabled(true);
+      workDayPl.setEnabled(true);
+      restDayPl.setEnabled(true);
+      wage1Txt.setEnabled(true);
+      wage2_1Pl.setEnabled(true);
+      wage2_2Txt.setEnabled(true);
+      wage3_1Pl.setEnabled(true);
+      wage3_2Txt.setEnabled(true);
+      wage4Txt.setEnabled(true);
+      wage5Pl.setEnabled(true);
+      insurancePl.setEnabled(true);
+      oSign1Txt.setEnabled(true);
+      oSign2Txt.setEnabled(true);
+      oSign3Txt.setEnabled(true);
+      oSign4Txt.setEnabled(true);
+
+      setVisible(true);
+   }
+
+   public void setVisiableAllFalse() {
+      oNameTxt.setEnabled(false);
+      wNameTxt.setEnabled(false);
+      contractTermStartPl.setEnabled(false);
+      contractTermEndPl.setEnabled(false);
+      placeTxt.setEnabled(false);
+      contentTxt.setEnabled(false);
+      for (MyTimer tm : timer)
+         tm.setEnabled(false);
+      workDayPl.setEnabled(false);
+      restDayPl.setEnabled(false);
+      wage1Txt.setEnabled(false);
+      wage2_1Pl.setEnabled(false);
+      wage2_2Txt.setEnabled(false);
+      wage3_1Pl.setEnabled(false);
+      wage3_2Txt.setEnabled(false);
+      wage4Txt.setEnabled(false);
+      wage5Pl.setEnabled(false);
+      insurancePl.setEnabled(false);
+      contractDatePl.setEnabled(false);
+      oSign1Txt.setEnabled(false);
+      oSign2Txt.setEnabled(false);
+      oSign3Txt.setEnabled(false);
+      oSign4Txt.setEnabled(false);
+      wSign1Txt.setEnabled(false);
+      wSign2Txt.setEnabled(false);
+      wSign3Txt.setEnabled(false);
+   }
+   // step1 점주가 근로계약서 작성
+   public void setStep2Contract(JSONObject json) {
+      setContractField(json);
+      setVisiableAllFalse();
+      wNameTxt.setEnabled(true);
+      wSign1Txt.setEnabled(true);
+      wSign2Txt.setEnabled(true);
+      wSign3Txt.setEnabled(true);
+
+      setVisible(true);
+   }
+
+   // step1 점주가 근로계약서 작성
+   public void setStep3Contract(JSONObject json) {
+      setContractField(json);
+
+      setVisiableAllFalse();
+      btnSubmit.setText("서명하기");
+
+      setVisible(true);
+   }
+
+   // step4 근로자가 근로계약서 서명
+   // 같은 버튼인데 기능을 나눠서 실행시킬려면, true or false 설정,,?
+   // or step설정
+   public void setStep4Contract(JSONObject json) {
+      setContractField(json);
+
+      setVisiableAllFalse();
+      btnSubmit.setText("서명하기");
+
+      setVisible(true);
+   }
+
+   // null인지 check하는 함수 추가하기
+
+   // step1 점주가 근로계약서 작성
+   public void setContractField(JSONObject json) {
+      JSONObject data = json;
+      JSONObject checkDay = new JSONObject();
+      JSONObject ox = new JSONObject();
+      JSONObject ox2 = new JSONObject();
+      JSONObject wage = new JSONObject();
+      JSONObject insur = new JSONObject();
+      JSONObject oSign = new JSONObject();
+      JSONObject wSign = new JSONObject();
+
+      oNameTxt.setText((String) data.get("oName"));
+      wNameTxt.setText((String) data.get("wName"));
+      System.out.println((JSONObject) data.get("oSign"));
+      contractTermStartPl.setSelectDate((JSONObject) data.get("contractTermStart"));
+      contractTermEndPl.setSelectDate((JSONObject) data.get("contractTermEnd"));
+
+      placeTxt.setText((String) data.get("place"));
+      contentTxt.setText((String) data.get("content"));
+
+      for (int i = 0; i < 4; i++)
+         timer[i].setSelectTime((JSONObject) data.get("timer" + (i + 1)));
+
+      for (int i = 0; i < 7; i++) {
+         workDayCb[i].setSelected((boolean) ((JSONObject) data.get("workDay")).get(dayString[i]));
+      }
+      for (int i = 0; i < 7; i++) {
+         restDayCb[i].setSelected((boolean) ((JSONObject) data.get("restDay")).get(dayString[i]));
+      }
+
+      wage1Txt.setText((String) ((JSONObject) data.get("wage")).get("wage1"));
+
+      for (int i = 0; i < 2; i++) {
+         wage2_1Cb[i]
+                 .setSelected((boolean) ((JSONObject) ((JSONObject) data.get("wage")).get("wage2_1")).get(yesno[i]));
+      }
+      wage2_2Txt.setText((String) ((JSONObject) data.get("wage")).get("wage2_2"));
+
+      for (int i = 0; i < 2; i++) {
+         wage3_1Cb[i]
+                 .setSelected((boolean) ((JSONObject) ((JSONObject) data.get("wage")).get("wage3_1")).get(yesno[i]));
+      }
+      wage3_2Txt.setText((String) ((JSONObject) data.get("wage")).get("wage3_2"));
+
+      wage4Txt.setText((String) ((JSONObject) data.get("wage")).get("wage4"));
+
+      for (int i = 0; i < 2; i++) {
+         wage5Cb[i].setSelected(
+                 (boolean) ((JSONObject) ((JSONObject) data.get("wage")).get("wage5")).get(wage5String[i]));
+      }
+
+      for (int i = 0; i < insuranceString.length; i++) {
+         insuranceCb[i].setSelected(
+                 (boolean) ((JSONObject) data.get("insurance")).get(insuranceString[i]));
+      }
+
+      contractDatePl.setSelectDate((JSONObject) data.get("contractDate"));
+
+      oSign1Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign1"));
+      oSign2Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign2"));
+      oSign3Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign3"));
+      oSign4Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign4"));
+
+      wSign1Txt.setText((String) ((JSONObject) data.get("wSign")).get("wSign1"));
+      wSign2Txt.setText((String) ((JSONObject) data.get("wSign")).get("wSign2"));
+      wSign3Txt.setText((String) ((JSONObject) data.get("wSign")).get("wSign3"));
+
+      setVisible(true);
+   }
+
+   public JSONObject getStepContract() {
+      JSONObject data = new JSONObject();
+      JSONObject checkDay = new JSONObject();
+      JSONObject ox = new JSONObject();
+      JSONObject ox2 = new JSONObject();
+      JSONObject wage = new JSONObject();
+      JSONObject insur = new JSONObject();
+      JSONObject oSign = new JSONObject();
+      JSONObject wSign = new JSONObject();
+
+      data.put("oName", oNameTxt.getText());
+      data.put("wName", wNameTxt.getText());
+
+      data.put("contractTermStart", contractTermStartPl.getSelectDate());
+      data.put("contractTermEnd", contractTermEndPl.getSelectDate());
+
+      data.put("place", placeTxt.getText());
+      data.put("content", contentTxt.getText());
+
+      for (int i = 0; i < 4; i++)
+         data.put("timer" + (i + 1), timer[i].getSelectTime());
+
+      for (int i = 0; i < 7; i++) {
+         checkDay.put(dayString[i], workDayCb[i].isSelected());
+      }
+      data.put("workDay", checkDay);
+      for (int i = 0; i < 7; i++) {
+         checkDay.put(dayString[i], restDayCb[i].isSelected());
+      }
+      data.put("restDay", checkDay);
+
+      wage.put("wage1", wage1Txt.getText());
+      for (int i = 0; i < 2; i++) {
+         ox.put(yesno[i], wage2_1Cb[i].isSelected());
+      }
+      wage.put("wage2_1", ox);
+      wage.put("wage2_2", wage2_2Txt.getText());
+
+      for (int i = 0; i < 2; i++) {
+         ox.put(yesno[i], wage3_1Cb[i].isSelected());
+      }
+      wage.put("wage3_1", ox);
+      wage.put("wage3_2", wage3_2Txt.getText());
+
+      wage.put("wage4", wage4Txt.getText());
+
+      for (int i = 0; i < 2; i++) {
+         ox2.put(wage5String[i], wage5Cb[i].isSelected());
+      }
+      wage.put("wage5", ox2);
+
+      data.put("wage", wage);
+
+      for (int i = 0; i < 4; i++) {
+         insur.put(insuranceString[i], insuranceCb[i].isSelected());
+      }
+
+      data.put("insurance", insur);
+
+      data.put("contractDate", contractDatePl.getSelectDate());
+
+      oSign.put("oSign1", oSign1Txt.getText());
+      oSign.put("oSign2", oSign2Txt.getText());
+      oSign.put("oSign3", oSign3Txt.getText());
+      oSign.put("oSign4", oSign4Txt.getText());
+
+      data.put("oSign", oSign);
+
+      wSign.put("wSign1", wSign1Txt.getText());
+      wSign.put("wSign2", wSign2Txt.getText());
+      wSign.put("wSign3", wSign3Txt.getText());
+
+      data.put("wSign", wSign);
+
+      System.out.println(data);
+
+      return data;
+   }
+
+   public void makePanel() {
       panel = new JPanel();
       panel.setLayout(null);
 
@@ -82,8 +376,8 @@ public class ContractGUI extends JFrame {
 
       //setVisible(true);
       // 세로 스크롤 사용, 가로 스크롤 사용 안함
-     // scrollPane = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-     // scrollPane.setBounds(4, 4, 340, 330);
+      // scrollPane = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+      // scrollPane.setBounds(4, 4, 340, 330);
 
       oNameLb = new JLabel("1. 사업주 이름");
       wNameLb = new JLabel("2. 근로자 이름");
@@ -394,313 +688,6 @@ public class ContractGUI extends JFrame {
       panel.add(workDayPl);
       panel.add(restDayPl);
       panel.add(paButton);
-
-
-      setResizable(false);
-      setVisible(false);
-
-      btnSubmit.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e) {
-            switch (whatStep) {
-               case 1:
-                  data2 = getStepContract(whatStep);
-                  whatStep = 2;
-                  setStep2Contract(whatStep, data2);
-                  setVisible(true);
-                  break;
-               case 2:
-                  data2 = getStepContract(whatStep);
-                  whatStep = 3;
-                  setStep3Contract(whatStep, data2);
-                  setVisible(true);
-                  break;
-               case 3:
-                  data2 = getStepContract(whatStep);
-                  whatStep = 4;
-                  setStep4Contract(whatStep, data2);
-                  setVisible(true);
-                  break;
-               case 4:
-                  data2 = getStepContract(whatStep);
-                  setVisible(false);
-                  break;
-            }
-            System.out.println("제출");
-            // 데베 검색 후 있는 사용자라면 isJoin = true
-            // 데베 검색 후 없는 사용자라면 isJoin = false
-            // tf.setText("127.0.0.1");
-            // tf.setEnabled(false);
-         }
-      });
-
-      btnCancel.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null,"계약서 작성을 취소합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
-            setVisible(false);
-            System.out.println("취소");
-            //System.exit(0);
-            // 추가할 내용
-            // 공개키, 비밀키, id, qid, userType, ip 생성 후
-            // user 데베에 추가
-
-         }
-      });
-
    }
-
-   // step1 점주가 근로계약서 작성
-   public void setStep1Contract(int step) {
-
-      setVisiableAllFalse();
-
-      oNameTxt.setEnabled(true);
-      contractTermStartPl.setEnabled(true);
-      contractTermEndPl.setEnabled(true);
-      placeTxt.setEnabled(true);
-      contentTxt.setEnabled(true);
-      for (MyTimer tm : timer)
-         tm.setEnabled(true);
-      workDayPl.setEnabled(true);
-      restDayPl.setEnabled(true);
-      wage1Txt.setEnabled(true);
-      wage2_1Pl.setEnabled(true);
-      wage2_2Txt.setEnabled(true);
-      wage3_1Pl.setEnabled(true);
-      wage3_2Txt.setEnabled(true);
-      wage4Txt.setEnabled(true);
-      wage5Pl.setEnabled(true);
-      insurancePl.setEnabled(true);
-      oSign1Txt.setEnabled(true);
-      oSign2Txt.setEnabled(true);
-      oSign3Txt.setEnabled(true);
-      oSign4Txt.setEnabled(true);
-
-
-      setVisible(true);
-
-      whatStep = step;
-   }
-
-   public void setVisiableAllFalse() {
-      oNameTxt.setEnabled(false);
-      wNameTxt.setEnabled(false);
-      contractTermStartPl.setEnabled(false);
-      contractTermEndPl.setEnabled(false);
-      placeTxt.setEnabled(false);
-      contentTxt.setEnabled(false);
-      for (MyTimer tm : timer)
-         tm.setEnabled(false);
-      workDayPl.setEnabled(false);
-      restDayPl.setEnabled(false);
-      wage1Txt.setEnabled(false);
-      wage2_1Pl.setEnabled(false);
-      wage2_2Txt.setEnabled(false);
-      wage3_1Pl.setEnabled(false);
-      wage3_2Txt.setEnabled(false);
-      wage4Txt.setEnabled(false);
-      wage5Pl.setEnabled(false);
-      insurancePl.setEnabled(false);
-      contractDatePl.setEnabled(false);
-      oSign1Txt.setEnabled(false);
-      oSign2Txt.setEnabled(false);
-      oSign3Txt.setEnabled(false);
-      oSign4Txt.setEnabled(false);
-      wSign1Txt.setEnabled(false);
-      wSign2Txt.setEnabled(false);
-      wSign3Txt.setEnabled(false);
-   }
-   // step1 점주가 근로계약서 작성
-   public void setStep2Contract(int step, JSONObject json) {
-      setContractField(json);
-      setVisiableAllFalse();
-      wNameTxt.setEnabled(true);
-      wSign1Txt.setEnabled(true);
-      wSign2Txt.setEnabled(true);
-      wSign3Txt.setEnabled(true);
-
-      setVisible(true);
-
-      whatStep = step;
-   }
-
-   // step1 점주가 근로계약서 작성
-   public void setStep3Contract(int step, JSONObject json) {
-      setContractField(json);
-
-      setVisiableAllFalse();
-      btnSubmit.setText("서명하기");
-
-      setVisible(true);
-      whatStep = step;
-   }
-
-   // step4 근로자가 근로계약서 서명
-   // 같은 버튼인데 기능을 나눠서 실행시킬려면, true or false 설정,,?
-   // or step설정
-   public void setStep4Contract(int step, JSONObject json) {
-      setContractField(json);
-
-      setVisiableAllFalse();
-      btnSubmit.setText("서명하기");
-
-      setVisible(true);
-
-      whatStep = step;
-   }
-
-   // null인지 check하는 함수 추가하기
-
-   // step1 점주가 근로계약서 작성
-   public void setContractField(JSONObject json) {
-      JSONObject data = json;
-      JSONObject checkDay = new JSONObject();
-      JSONObject ox = new JSONObject();
-      JSONObject ox2 = new JSONObject();
-      JSONObject wage = new JSONObject();
-      JSONObject insur = new JSONObject();
-      JSONObject oSign = new JSONObject();
-      JSONObject wSign = new JSONObject();
-
-      oNameTxt.setText((String) data.get("oName"));
-      wNameTxt.setText((String) data.get("wName"));
-      System.out.println((JSONObject) data.get("oSign"));
-      contractTermStartPl.setSelectDate((JSONObject) data.get("contractTermStart"));
-      contractTermEndPl.setSelectDate((JSONObject) data.get("contractTermEnd"));
-
-      placeTxt.setText((String) data.get("place"));
-      contentTxt.setText((String) data.get("content"));
-
-      for (int i = 0; i < 4; i++)
-         timer[i].setSelectTime((JSONObject) data.get("timer" + (i + 1)));
-
-      for (int i = 0; i < 7; i++) {
-         workDayCb[i].setSelected((boolean) ((JSONObject) data.get("workDay")).get(dayString[i]));
-      }
-      for (int i = 0; i < 7; i++) {
-         restDayCb[i].setSelected((boolean) ((JSONObject) data.get("restDay")).get(dayString[i]));
-      }
-
-      wage1Txt.setText((String) ((JSONObject) data.get("wage")).get("wage1"));
-
-      for (int i = 0; i < 2; i++) {
-         wage2_1Cb[i]
-                 .setSelected((boolean) ((JSONObject) ((JSONObject) data.get("wage")).get("wage2_1")).get(yesno[i]));
-      }
-      wage2_2Txt.setText((String) ((JSONObject) data.get("wage")).get("wage2_2"));
-
-      for (int i = 0; i < 2; i++) {
-         wage3_1Cb[i]
-                 .setSelected((boolean) ((JSONObject) ((JSONObject) data.get("wage")).get("wage3_1")).get(yesno[i]));
-      }
-      wage3_2Txt.setText((String) ((JSONObject) data.get("wage")).get("wage3_2"));
-
-      wage4Txt.setText((String) ((JSONObject) data.get("wage")).get("wage4"));
-
-      for (int i = 0; i < 2; i++) {
-         wage5Cb[i].setSelected(
-                 (boolean) ((JSONObject) ((JSONObject) data.get("wage")).get("wage5")).get(wage5String[i]));
-      }
-
-      for (int i = 0; i < insuranceString.length; i++) {
-         insuranceCb[i].setSelected(
-                 (boolean) ((JSONObject) data.get("insurance")).get(insuranceString[i]));
-      }
-
-      contractDatePl.setSelectDate((JSONObject) data.get("contractDate"));
-
-      oSign1Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign1"));
-      oSign2Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign2"));
-      oSign3Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign3"));
-      oSign4Txt.setText((String) ((JSONObject) data.get("oSign")).get("oSign4"));
-
-      wSign1Txt.setText((String) ((JSONObject) data.get("wSign")).get("wSign1"));
-      wSign2Txt.setText((String) ((JSONObject) data.get("wSign")).get("wSign2"));
-      wSign3Txt.setText((String) ((JSONObject) data.get("wSign")).get("wSign3"));
-
-      setVisible(true);
-   }
-
-   public JSONObject getStepContract(int step) {
-
-      whatStep = step;
-
-      JSONObject data = new JSONObject();
-      JSONObject checkDay = new JSONObject();
-      JSONObject ox = new JSONObject();
-      JSONObject ox2 = new JSONObject();
-      JSONObject wage = new JSONObject();
-      JSONObject insur = new JSONObject();
-      JSONObject oSign = new JSONObject();
-      JSONObject wSign = new JSONObject();
-
-      data.put("oName", oNameTxt.getText());
-      data.put("wName", wNameTxt.getText());
-
-      data.put("contractTermStart", contractTermStartPl.getSelectDate());
-      data.put("contractTermEnd", contractTermEndPl.getSelectDate());
-
-      data.put("place", placeTxt.getText());
-      data.put("content", contentTxt.getText());
-
-      for (int i = 0; i < 4; i++)
-         data.put("timer" + (i + 1), timer[i].getSelectTime());
-
-      for (int i = 0; i < 7; i++) {
-         checkDay.put(dayString[i], workDayCb[i].isSelected());
-      }
-      data.put("workDay", checkDay);
-      for (int i = 0; i < 7; i++) {
-         checkDay.put(dayString[i], restDayCb[i].isSelected());
-      }
-      data.put("restDay", checkDay);
-
-      wage.put("wage1", wage1Txt.getText());
-      for (int i = 0; i < 2; i++) {
-         ox.put(yesno[i], wage2_1Cb[i].isSelected());
-      }
-      wage.put("wage2_1", ox);
-      wage.put("wage2_2", wage2_2Txt.getText());
-
-      for (int i = 0; i < 2; i++) {
-         ox.put(yesno[i], wage3_1Cb[i].isSelected());
-      }
-      wage.put("wage3_1", ox);
-      wage.put("wage3_2", wage3_2Txt.getText());
-
-      wage.put("wage4", wage4Txt.getText());
-
-      for (int i = 0; i < 2; i++) {
-         ox2.put(wage5String[i], wage5Cb[i].isSelected());
-      }
-      wage.put("wage5", ox2);
-
-      data.put("wage", wage);
-
-      for (int i = 0; i < 4; i++) {
-         insur.put(insuranceString[i], insuranceCb[i].isSelected());
-      }
-
-      data.put("insurance", insur);
-
-      data.put("contractDate", contractDatePl.getSelectDate());
-
-      oSign.put("oSign1", oSign1Txt.getText());
-      oSign.put("oSign2", oSign2Txt.getText());
-      oSign.put("oSign3", oSign3Txt.getText());
-      oSign.put("oSign4", oSign4Txt.getText());
-
-      data.put("oSign", oSign);
-
-      wSign.put("wSign1", wSign1Txt.getText());
-      wSign.put("wSign2", wSign2Txt.getText());
-      wSign.put("wSign3", wSign3Txt.getText());
-
-      data.put("wSign", wSign);
-
-      System.out.println(data);
-
-      return data;
-   }
-
 
 }

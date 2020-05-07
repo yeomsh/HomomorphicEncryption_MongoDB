@@ -1,8 +1,10 @@
 package HomomorphicEncryption;
 
+import DataClass.Database;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import org.bson.Document;
-import org.bson.codecs.pojo.annotations.BsonIgnore;
+import org.bson.conversions.Bson;
 import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
@@ -11,26 +13,17 @@ import java.util.Vector;
 
 import static com.mongodb.client.model.Filters.*;
 
-public class NoSQLDB {
-
-    MongoClient mongoClient;
-    MongoDatabase database;
+public class NoSQLDB extends Database{
 
     MongoCollection<Document> keywordPEKS;
     MongoCollection<Document> filePEKS;
     MongoCollection<Document> zindex;
-    MongoCollection<Document> user;
-    MongoCursor<Document> cursor;
     Vector<Object> saveKeywordId = new Vector<>();
 
-    //
     public NoSQLDB(){
-        mongoClient = MongoClients.create();
-        database = mongoClient.getDatabase("mydb");
         keywordPEKS = database.getCollection("keywordPEKS");
         filePEKS = database.getCollection("filePEKS");
         zindex = database.getCollection("zindex");
-        user = database.getCollection("user");
     }
     public void delete(){
         keywordPEKS.drop();
@@ -67,7 +60,9 @@ public class NoSQLDB {
     }
 
     public Document userDoc(User user){
-        Document doc = new Document("id",user.id.toString(16)).append("ip",user.ip).append("userType",user.userType);
+        Document doc = new Document("id",user.id.toString(16))
+                .append("ip",user.ip)
+                .append("userType",user.userType);
         return doc;
     }
 
@@ -84,7 +79,7 @@ public class NoSQLDB {
         return doc;
     }
 
-    public ArrayList<User> getUser(){ //loadip와 같은 역할
+    public ArrayList<User> getUserList(){
         ArrayList<User> uList = new ArrayList<User>();
         cursor = user.find().iterator();
         try {
@@ -106,7 +101,6 @@ public class NoSQLDB {
 
         cursor = zindex.find().iterator();
         //find(): zindex의 모든 document 가져오기
-
         ArrayList<Document> arraylist = new ArrayList<>();
         Document sample;
         if(cursor.hasNext()) //기존에 키워드가 하나라도 등록되어 있으면 (그 idx의 파일 리스트로부터 id들을 쫙 가져옴)
