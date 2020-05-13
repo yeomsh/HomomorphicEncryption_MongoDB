@@ -1,7 +1,12 @@
 package GUI;
 
+import DataClass.Contract;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class MainPannel extends JPanel {
     public JComboBox comboBoxContract;
@@ -40,19 +45,16 @@ public class MainPannel extends JPanel {
         }
         this.add(button);
     }
-    public void setComboBoxList(String[] list) {
-        this.contractList = list;
-        //this.comboBoxContract.removeAllItems();
-        for(int i=0; i<contractList.length; i++) {
-            comboBoxContract.addItem(contractList[i]);
-        }
-    }
-    void setComboBoxList(ArrayList<String> list) {
+    public void setComboBoxContract(ArrayList<Contract> contractList){
         this.comboBoxContract.removeAllItems();
-        for(int i=0; i<list.size(); i++) {
-            comboBoxContract.addItem(list.get(i));
+        for (Contract con: contractList){
+            comboBoxContract.addItem(con._id); //addItem(인자: 콤보박스 string)
         }
     }
-
-
+    public void setComboBoxContract(Vector<JSONObject> contractList){
+        this.comboBoxContract.removeAllItems();
+        for (JSONObject obj: contractList){
+            comboBoxContract.addItem(obj.get("oName").toString()+" "+obj.get("wName").toString()); //addItem(인자: 콤보박스 string)
+        }
+    }
 }

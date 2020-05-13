@@ -19,9 +19,6 @@ public class KGC {
     public BigInteger eta = new BigInteger("2000"); //원래 조건 -> (int)(Math.random()*Math.pow(lamda,2)), 개인키의 길이
     public  BigInteger gamma = new BigInteger("36896"); //원래 조건 -> (int)(Math.random()*Math.pow(lamda,5)) -> 현재 lamda^3
     public  BigInteger pkSetSize; //감마 + 람다 (but 너무 커서 일단 감마^3+람다로)
-
-
-
     private  BigInteger p = new BigInteger("1090aab060716f966f554558a15e41f6c05cb1159bc6aa7eb9077471b35f1599bf3f0d22b4ce61d85dd9f4150701d23999a15f24f2b8befb100f8a156b15d71a3a766a77665823c7f227c1b367b97394b417fe1092a8173d7accbf2270a6c39315a3ee3578d828550b1599a14b811f017482eb8ed88d9f418abb0fc20a2df00479351cf6443df344269bd7aee8b6fc0f21069b53c95c15fc248558f86ff79574b2e07e5c7ca359ce3a16b68ecbbd0f4ff8f04347ba713e53c81aad9be4c1b3a06da29cba7aa1c81ca9f6213ebf539a5dacf220e79957399dc8a06c417d57272de9b0ea7f72d8841ac22a5f98749cd91006d414a623f7b2bd3485f",16); // 비트의 수가 eta (lamda^2)
     private  BigInteger a = new BigInteger("174682bb762fb605edd9dea02a610fd6cc6ad6ea2b",16); //system alpha
 
@@ -29,27 +26,14 @@ public class KGC {
 
     private BigInteger au;
 
-    public KGC(){
-        this(new BigInteger("10"));
-    }
-
     public KGC(BigInteger pkSetSize){
         this.pkSetSize = pkSetSize;
         System.out.println("lamda : " + lamda +", eta : "+eta+", gamma : "+ gamma + "pkSetSize : " + pkSetSize);
         System.out.println("bit length of p : "+eta + ", bit length of a(alpha) : " + lamda + "\n");
-        makePublicKeySet(this.pkSetSize);
+        makePublicKeySet();
     }
 
-    public KGC(BigInteger pkSetSize, BigInteger lamda, BigInteger gamma, BigInteger p, BigInteger a){
-        this.pkSetSize = pkSetSize;
-        this.lamda = lamda;
-        this.gamma = gamma;
-        this.p = p;
-        this.a = a;
-        makePublicKeySet(this.pkSetSize);
-    }
-
-    private void makePublicKeySet(BigInteger pkSetSize) {
+    private void makePublicKeySet() {
     /*
         Xi = p*qi + ri
         qi = 0 ~ (2^lamda)/2 // 0~ any integer
@@ -121,14 +105,12 @@ public class KGC {
     public void setAu(BigInteger au){
         this.au = au;
     }
-
     public BigInteger getAu(){
         return au;
     }
     public BigInteger getP() {
         return p;
     }
-
     public BigInteger getA() {
         return a;
     }

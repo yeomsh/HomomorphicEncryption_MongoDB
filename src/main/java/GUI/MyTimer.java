@@ -17,7 +17,6 @@ class MyTimer extends Panel {
    Choice cmin = new Choice();
    JLabel lhour = new JLabel("시");
    JLabel lmin = new JLabel("분");
-   Button bt2 = new Button("확인");
 
    // 시 초이스 컴포넌트
    public void makeHourChoice() {
@@ -50,8 +49,8 @@ class MyTimer extends Panel {
 
    public void setSelectTime(JSONObject data) {
 
-      chour.select((int) data.get("hour")+1);
-      cmin.select((int)data.get("min")+1);
+      chour.select((int) (long) data.get("hour")+1);
+      cmin.select((int) (long) data.get("min")+1);
    }
 
 

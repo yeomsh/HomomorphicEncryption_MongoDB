@@ -50,26 +50,19 @@ public class MainFrame extends JFrame{
 		//showInitDialog();
 	}
 	public void setListener(ActionListener mListener){
-		//mListener = new CSActionListener(this, this);
 		//버튼에 리스너들 달기
 		mpNew.button.addActionListener(mListener);
 		mpContinue.button.addActionListener(mListener);
 		mpSearch.button.addActionListener(mListener);
 		signUpDialog.okButton.addActionListener(mListener);
-	//	jTab.addChangeListener(mListener);
-	//	addWindowListener(mListener);
 	}
 	public void setListener(ChangeListener mListener){
 		jTab.addChangeListener(mListener);
 	}
 	public void makePannel() {
-
 		mpNew = new MainPannel(Mode.CONTRACT_NEW, "시작하기");
-	//	mpNew.button.addActionListener(mainListener);
 		mpContinue = new MainPannel(Mode.CONTRACT_CONTINUE,"이어하기");
-	//	mpContinue.button.addActionListener(mainListener);
-		mpSearch = new MainPannel(Mode.CONTRACT_SEARCH,"확인하기");
-	//	mpSearch.button.addActionListener(mainListener);
+		mpSearch = new MainPannel(Mode.CONTRACT_SEARCH,"검색하기");
 	}
 	public void makeTopTab() {
 		//상단 탭(계약 시작하기/ 계약 이어하기/ 검색하기/ 동기화)
@@ -95,14 +88,6 @@ public class MainFrame extends JFrame{
 	public void addLog(String log) {
 		taLog.append(log+"\n");
 		taLog.setCaretPosition(taLog.getDocument().getLength());
-	}
-
-	public static void main(String[] args) {
-		MainFrame frame = new MainFrame();
-		for(int i =0 ;i<40;i++) {
-			frame.addLog("로그"+i);
-		}
-		frame.mpContinue.setComboBoxList(new String[] {"111","222","333"});
 	}
 }
 

@@ -1,40 +1,34 @@
+import Blockchain.Server;
+import DataClass.DataSource;
 import DataClass.Database;
+import DataClass.User;
 import GUI.MainFrame;
 import HomomorphicEncryption.*;
+import org.json.simple.JSONObject;
 import util.*;
-
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionListener;
-import java.net.UnknownHostException;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 public class CSManager {
-    public Scanner scan = new Scanner(System.in);
-
     protected ArrayList<String> ipList;
-//    protected Vector<Client> cList;
-//    protected static ArrayList<String> chainStr = new ArrayList<String>();
-//    public static String PATH;
-//    public FileManage chainFile;
-//    protected Server server;
-//    protected Vector<String> ableIp;
-//    protected static PrivateKey privateKey = null;
-//    protected static PublicKey publicKey = null;
-//    protected static Boolean isVerifySuccess = true; // 검증 실패 성공 구분하는 변수
-//    protected static int countPOW = 0;
-//    protected static JSONObject block = new JSONObject(); // 작업증명시 timestamp 등등 해쉬
+    public ArrayList<String> idList;
+    protected final ArrayList<String> chainStr = FileManager.fileLineRead();
     protected String myIp = "";
-    //JSONObject data = new JSONObject();
-    protected static KeyGenerator KG;
+    protected KeyGenerator KG;
     public MainFrame frame;
-    public HomomorphicEncryption he;
-    protected ArrayList<User> userList;
-    //protected User myUser;
-    protected DataClass.User user;
+    public HEManager he;
+    protected User user;
     public CSEventHandler mHandler;
     public Database db;
-    public CSManager() throws UnknownHostException {
+    protected Server server;
+    public CSManager() throws IOException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         //CSManager를 실행시키기위해서 필요한 setup들
         KG = new KeyGenerator();
         initKGCAndServer();
@@ -60,59 +54,61 @@ public class CSManager {
                         +"frame 및 Listener 생성"
         );
     }
-
+//    public void readChain() { // chain text 가져옴
+//        try {
+//            chainStr = FileManage.fileLineRead();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//    }
     //KGC 및 서버 생성 (kgc는 나중에 데베에서 받아오는 형식으로,,,?)
-    public void initKGCAndServer(){ //근데 he서버는 he동작을 할 떄 init을 하는게 낫지 않우까!?!?!?!? -승연
+    public void initKGCAndServer() { //근데 he서버는 he동작을 할 떄 init을 하는게 낫지 않우까!?!?!?!? -승연
         //db 변수 init
         db= new Database();
         //server에서 noSQLDB생성 -> 근데 he와 연관없는 db작업이 필요해서 db변수를 만들었어 ! - 승연
-        he = new HomomorphicEncryption();
-        he.settingToStart();
+        he = new HEManager();
+        //블록체인 서버 OPEN
+        server = new Server(3000,chainStr);
     }
 
     //제일 처음 로그인 및 회원가입 과정을 수행하는 함수
-    public void initLogin() throws UnknownHostException {
+    public void initLogin() throws IOException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException {
         //로그인하면 -> 로그인
         //회원가입하면, 키 발급, 아이디 발급, (kgc공개키는 키워드 등록할 때 받기(?)), 데베 등록
         myIp = mHandler.showInitDialog();
+        boolean isAlreadyUser = false;
         frame.addLog("사용자의 Ip : "+myIp);
-
-        ipList = db.getIpList();
-        for (String ip: ipList)
-            System.out.println(ip);
-        //userList = he.server.getuList();
-        //System.out.println("userList: "+userList.size());
-        //for(User i : userList) frame.addLog(i.toString());
-
-        //test용 변수 myIp에 없는 사용자로 등록하고 싶으면 임의의 ip주소 지정 후 사용
-        //myIp = "192.192.192.0";
-        if(ipList.contains(myIp)){
-            //이미 등록된 사용
-            user = db.getUser(myIp);
-            frame.addLog("등록된 사용자 로그인 : " + user.toString());
-            //qid바로 가져와서 user에 저장
-            //setAu와 pkset정하는 것은 필요할 때 init()
-        }
-        else{
-            JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
-            mHandler.showSignUpDialog();
-            //ok버튼 누르면 리스너 작동
-        }
-
+        ipList = db.getIpList(myIp, new DataSource.Callback() {
+            @Override
+            public void onDataLoaded() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
+                user = db.getUser(myIp);
+                frame.addLog("등록된 사용자 로그인 : " + user.toString());
+            }
+            @Override
+            public void onDataFailed() {
+                idList = db.getIdList();
+                JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
+                mHandler.showSignUpDialog();
+            }
+        });
+        System.out.println("최종 유저 수: "+ ipList.size());
     }
-    public Vector<Contract> searchKeyword(String keyword, User userA){
-        Vector<Contract> keywordFile = new Vector<>();
-        keywordFile = he.searchKeyword(userA,keyword);
-        return keywordFile;
+    public Vector<JSONObject> searchKeyword(String keyword, User user){
+        he.setUserPKSet(user);
+        return he.searchKeyword(user,keyword);
     }
-
+    public void uploadContract(DataClass.Contract contract){
+        he.setUserPKSet(user);
+        he.requestToUpload(user,contract);
+    }
     public void loadContractData(){
         user.setContractList(db.getUserContractList(user.ip));
     }
-    public void uploadUser(){
+    public void uploadUser() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
         db.insertUser(user);
     }
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException {
         CSManager t = new CSManager();
     }
 }

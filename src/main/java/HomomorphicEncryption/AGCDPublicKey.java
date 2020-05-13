@@ -5,7 +5,6 @@ import java.math.BigInteger;
 public class AGCDPublicKey implements Comparable<AGCDPublicKey>{
     private BigInteger p;
     private BigInteger q;
-
     public BigInteger r;
     public BigInteger pk;
     public AGCDPublicKey(BigInteger p, BigInteger q, BigInteger r){

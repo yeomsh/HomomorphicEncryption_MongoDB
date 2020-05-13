@@ -1,8 +1,10 @@
 import Blockchain.BCManager;
+import DataClass.DataSource;
+import DataClass.User;
 import GUI.ContractGUI;
 import GUI.MainFrame;
-import HomomorphicEncryption.Contract;
-import HomomorphicEncryption.User;
+import HomomorphicEncryption.CipherContract;
+import org.json.simple.JSONObject;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -11,16 +13,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Vector;
 
 public class CSEventHandler implements ActionListener, ChangeListener, WindowListener {
 
     private MainFrame frame;
     private CSManager manager;
-    private ContractGUI contractGUI;
 
     public CSEventHandler(MainFrame frame, CSManager manager) {
         this.frame = frame;
@@ -40,10 +46,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
         frame.signUpDialog.setVisible(true);
     }
     public String showKeywordDialog() {
-        String keyword = JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
-//		keywordDialog.okButton.addActionListener(this);
-//		keywordDialog.setVisible(true);
-        return keyword;
+        return JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
     }
     public String showInitDialog() throws UnknownHostException {
         InetAddress ip = InetAddress.getLocalHost();
@@ -74,26 +77,44 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
             showIpDialog();
         }
         else if(source == frame.mpContinue.button) {
-            System.out.println("mpContinue");
+            if(!manager.user.contractList.isEmpty()) {
+                int index = frame.mpContinue.comboBoxContract.getSelectedIndex();
+                BCManager.chainStr = manager.chainStr;
+                if (manager.user.contractList.get(index).step == 4) {
+                    DataClass.Contract contract = manager.user.contractList.get(index);
+                    new BCManager(manager.user, manager.db, manager.ipList, contract
+                            , new DataSource.Callback() {
+                        @Override //HE 작업하기
+                        public void onDataLoaded(){
+                            manager.uploadContract(contract);
+                        }
+                        @Override //그냥 끝내기
+                        public void onDataFailed() {
 
-
+                        }
+                    });
+                } else {
+                    new BCManager(manager.user, manager.db, manager.ipList,manager.user.contractList.get(index));
+                }
+            }
         }
         else if(source == frame.mpSearch.button) {
-            Vector<Contract> keywordFile = new Vector<>();
-            User userA = new User(manager.he.kgc.pkSet);
-            userA.qid = new BigInteger("cb066fe11fed84bc5dcb04bbb", 16);
+            Vector<JSONObject> keywordFile = new Vector<>();
+            //manager.user.qid = new BigInteger("cb066fe11fed84bc5dcb04bbb", 16);
 
             //csManager.he.requestToUpload(userA,new String[]{"a","c"});
             String keyword = showKeywordDialog();
             frame.addLog("검색할 키워드 : " + keyword);
             if(keyword!=null){
-                keywordFile = manager.searchKeyword(keyword,userA);
-                for(Contract i : keywordFile)
-                    frame.addLog(i.toString() + "\n file : " + i.file);
+                keywordFile = manager.searchKeyword(keyword,manager.user);
+                for(JSONObject i : keywordFile)
+                    frame.addLog(i.toString() + "\n file : " + i);
+                //데이터 받아온거 뿌리기
+                frame.mpSearch.setComboBoxContract(keywordFile);
+                manager.loadContractData();
                 //키워드 검색하기
                 //검색끝나면 파일 보여주는 항목 update한 후 보여주기
                 //뭔가 콤보박스 선택못하게 하거나 안보이게 한 후 파일 다 받아온 다음에 쓸 수 있게
-
             }
             System.out.println("mpSearch");
         }
@@ -103,11 +124,22 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
             int userType = 0;
             if(frame.signUpDialog.userType[1].isSelected())
                 userType = 1;
-            manager.user = new DataClass.User(manager.myIp,userType);
+            try {
+                manager.user = new User(manager.myIp,userType, manager.idList);
+                manager.uploadUser();
+            } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+                noSuchAlgorithmException.printStackTrace();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            } catch (InvalidAlgorithmParameterException invalidAlgorithmParameterException) {
+                invalidAlgorithmParameterException.printStackTrace();
+            } catch (NoSuchProviderException noSuchProviderException) {
+                noSuchProviderException.printStackTrace();
+            } catch (InvalidKeySpecException invalidKeySpecException) {
+                invalidKeySpecException.printStackTrace();
+            }
             //db에 업로드
-            manager.uploadUser();
             JOptionPane.showMessageDialog(null, "회원가입 완료했습니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
-
             frame.signUpDialog.setVisible(false);
             frame.addLog("사용자 회원가입 완료 : " + manager.user.toString());
             //pk,sk만들기 -> 파일 만들고
@@ -165,12 +197,11 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
             if (frame.idxTab == 2) {// 현재 탭이 "계약 이어하기"
                 //relaod data
                 manager.loadContractData();
-                System.out.println(manager.user.contractList);
                 //데이터 받아온거 뿌리기
-                frame.mpContinue.setComboBoxList(new String[] {"555","666","777"});
+                frame.mpContinue.setComboBoxContract(manager.user.contractList);
             }
             else {
-
+                //다른 탭에서는 반응없음
             }
         }
         else {

@@ -1,8 +1,5 @@
 package Blockchain;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Date;
 
 import util.StringUtil;
@@ -26,16 +23,8 @@ public class Block {
 		this.timeStamp = new Date().getTime();
 	}
 
-	// 파일에서 읽어와서 그냥 hash만 저장
-	public Block(String hash) {
-		this.hash = hash;
-	}
-
-	// 확인하는 용도의 블럭 생성하는 생성자
-
 	public String ProofOfWork() {
 		mineNewBlock();
-
 		return hash;
 		// 파일에 저장
 		// makeLog();
@@ -54,7 +43,7 @@ public class Block {
 
 	// hash값 만들기 (이전 해쉬값 + 시간 + data + nonce)
 	public String makeHashBlock() {
-		return StringUtil.getSha256(previousHash + Long.toString(timeStamp) + data + Integer.toString(nonce));
+		return StringUtil.getSha256(previousHash + timeStamp + data + nonce);
 	}
 
 	public String getHash() {

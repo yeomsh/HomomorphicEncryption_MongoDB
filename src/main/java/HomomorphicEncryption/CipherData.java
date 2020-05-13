@@ -1,9 +1,10 @@
 package HomomorphicEncryption;
 
+import DataClass.User;
 import java.math.BigInteger;
 import java.util.Vector;
 
-public class Data {
+public class CipherData {
 
     private User user;
     private BigInteger w;
@@ -13,16 +14,15 @@ public class Data {
     public Boolean isExist = false;
     public Object fileId = null;
 
-    public Data(User user, BigInteger w, BigInteger a, Vector<AGCDPublicKey> pkSet){
+    public CipherData(User user, BigInteger w, BigInteger a, Vector<AGCDPublicKey> pkSet){
         this.user = user;
         this.w = w;
         makeC1(a, pkSet.get(0));
         makeC2();
         makeC3(a,pkSet.get(0));
-
     }
 
-    public Data(User user, BigInteger w, AGCDPublicKey x0){
+    public CipherData(User user, BigInteger w, AGCDPublicKey x0){
         this.user = user;
         this.w = w;
 
@@ -31,16 +31,15 @@ public class Data {
         makeC3(user.getAu(), x0);
     }
 
-    public Data(User user, BigInteger w){
+    public CipherData(User user, BigInteger w){
         this.user = user;
         this.w = w;
-
         makeC1(user.getAu(), user.pkSet.firstElement());
         makeC2();
         makeC3(user.getAu(), user.pkSet.firstElement());
     }
 
-    public Data(BigInteger c1, BigInteger c2, BigInteger c3){
+    public CipherData(BigInteger c1, BigInteger c2, BigInteger c3){
         this.c1 = c1;
         this.c2 = c2;
         this.c3 = c3;
@@ -63,7 +62,11 @@ public class Data {
         return ci.mod(user.getAu()).add(systemAlpha.multiply(sumPk()));
     }
     void makeC1(BigInteger a, AGCDPublicKey x0){
-        x0 = HomomorphicEncryption.kgc.checkX0Condition(x0,user.getAu());
+        x0 = HEManager.KGC.checkX0Condition(x0,user.getAu());
+        System.out.println(user.r);
+        System.out.println(user.qid);
+        System.out.println(a);
+        System.out.println(sumPk());
         c1 = w.add(user.r.multiply(user.qid)).add(a.multiply(sumPk())); //w+(user.r*user.qid)+(a*sumPk);
         System.out.println("w(hexadecimal) = " + w.toString(16) + ", r(hexadecimal) = " + user.r.toString(16) + ", qid(hexadecimal) = " + user.qid.toString(16));
         System.out.println();
@@ -77,7 +80,7 @@ public class Data {
     }
     void makeC3(BigInteger a, AGCDPublicKey x0){
         //ci1계산하기 (mod범위에 맞추어서)
-        x0 = HomomorphicEncryption.kgc.checkX0Condition(x0,user.getAu());
+        x0 = HEManager.KGC.checkX0Condition(x0,user.getAu());
         c3 = user.qid.add(user.r.multiply(user.qid)).add(a.multiply(sumPk())); //user.qid+(user.r*user.qid)+(a*sumPk);
         c3 = c3.mod(x0.pk).compareTo(x0.pk.divide(BigInteger.TWO))>0 ? c3.mod(x0.pk).subtract(x0.pk) : c3.mod(x0.pk);
         //    System.out.println("c3(hexadecimal): "+c3.toString(16));
@@ -97,12 +100,9 @@ public class Data {
     public User getUser() {
         return user;
     }
-
-
     public void setFileId(Object fileId) {
         this.fileId = fileId;
     }
-
     public Object getFileId(){ return fileId; }
 
 }

@@ -14,7 +14,6 @@ public class ContractGUI extends JFrame {
 
    JScrollPane scroll;
    JPanel panel;
-   JSONObject data2 = new JSONObject();
 
    JLabel oNameLb, wNameLb, contractTermLb, placeLb, contentLb, workTimLb, restTimeLb, workDayLb, restDayLb;
    JLabel wageTitleLb, wage1Lb, wage2_1Lb, wage2_2Lb, wage3_1Lb, wage3_2Lb, wage4Lb, wage5Lb;
@@ -103,28 +102,29 @@ public class ContractGUI extends JFrame {
    }
 
    public void setPanel(){
-      switch (contract.step){
-         case 0:
+      System.out.println("contract gui: set panel , step: "+contract.step);
+      switch (contract.step+1){ //step에 저장된 값은 이전 단계에서 작성된 것이  +1
+         case 1:
             setStep1Contract();
             break;
          case 2:
-            setStep2Contract(contract.data);
+            setStep2Contract(contract.fileData);
             break;
          case 3:
-            setStep3Contract(contract.data);
+            setStep3Contract(contract.fileData);
             break;
          case 4:
-            setStep4Contract(contract.data);
+            setStep4Contract(contract.fileData);
             break;
+         case 5:
+            setStep5Contract(contract.fileData);
          default:
             break;
       }
    }
    // step1 점주가 근로계약서 작성
    public void setStep1Contract() {
-
       setVisiableAllFalse();
-
       oNameTxt.setEnabled(true);
       contractTermStartPl.setEnabled(true);
       contractTermEndPl.setEnabled(true);
@@ -205,18 +205,21 @@ public class ContractGUI extends JFrame {
    // or step설정
    public void setStep4Contract(JSONObject json) {
       setContractField(json);
-
       setVisiableAllFalse();
       btnSubmit.setText("서명하기");
-
       setVisible(true);
    }
-
+   public void setStep5Contract(JSONObject json) { //점주가 근로자의 서명이 붙은 파일을 최종적으로 검증하는 창
+      setContractField(json);
+      setVisiableAllFalse();
+      btnSubmit.setText("블록체인");
+      setVisible(true);
+   }
    // null인지 check하는 함수 추가하기
 
    // step1 점주가 근로계약서 작성
-   public void setContractField(JSONObject json) {
-      JSONObject data = json;
+   public void setContractField(JSONObject data) {
+      System.out.println("setcontractfield : \n"+data);
       JSONObject checkDay = new JSONObject();
       JSONObject ox = new JSONObject();
       JSONObject ox2 = new JSONObject();
@@ -227,7 +230,8 @@ public class ContractGUI extends JFrame {
 
       oNameTxt.setText((String) data.get("oName"));
       wNameTxt.setText((String) data.get("wName"));
-      System.out.println((JSONObject) data.get("oSign"));
+      System.out.println(data.get("oSign"));
+
       contractTermStartPl.setSelectDate((JSONObject) data.get("contractTermStart"));
       contractTermEndPl.setSelectDate((JSONObject) data.get("contractTermEnd"));
 
