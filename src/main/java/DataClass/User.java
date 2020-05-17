@@ -52,10 +52,10 @@ public class User {
     void setECDSAKeySet() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, IOException, InvalidKeySpecException {
         File keyFile = new File("private.pem");
         if (!keyFile.exists()) {
-            KG.makeKey();
+            KG.makeECDSAKey();
         }
-        this.sigPrivateKey = KG.readPrivateKeyFromPemFile("private.pem");
-        this.sigPublicKey = KG.readPublicKeyFromPemFile("public.pem");
+        this.sigPrivateKey = KG.readECDSAPrivateKeyFromPemFile("private.pem");
+        this.sigPublicKey = KG.readECDSAPublicKeyFromPemFile("public.pem");
     }
     public String toString(){
         return "ip : "+ this.ip + ", id : " + this._id + ", userType : " + this.userType;

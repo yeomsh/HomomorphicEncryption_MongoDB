@@ -7,7 +7,12 @@ package ecies;
  */
 
 import org.bouncycastle.util.encoders.Base64;
+
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 
 /**
  *
@@ -97,7 +102,17 @@ public class Main extends javax.swing.JFrame {
         recipientGenerateKeysButton.setText("Generate keys");
         recipientGenerateKeysButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                recipientGenerateKeysButtonActionPerformed(evt);
+                try {
+                    recipientGenerateKeysButtonActionPerformed(evt);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (InvalidAlgorithmParameterException e) {
+                    e.printStackTrace();
+                } catch (InvalidKeySpecException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -325,7 +340,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_senderEncryptButtonActionPerformed
 
 
-    private void recipientGenerateKeysButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recipientGenerateKeysButtonActionPerformed
+    private void recipientGenerateKeysButtonActionPerformed(java.awt.event.ActionEvent evt) throws IOException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeySpecException {//GEN-FIRST:event_recipientGenerateKeysButtonActionPerformed
         byte[][] recipientKeyPairs = ellipticCurve.generateKeyPair();
         recepientPublicKeyText.setText(Base64.toBase64String(recipientKeyPairs[1])/*Hex.toHexString(recipientKeyPairs[1])*/);
         recipientPrivateKey = recipientKeyPairs[0];

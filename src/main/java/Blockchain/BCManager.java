@@ -180,7 +180,7 @@ public class BCManager {
             obj.put("plain", hashData);
             byte[] sigHashData = addSignature(hashData.getBytes(StandardCharsets.UTF_8));
             obj.put("sig", Base64.getEncoder().encodeToString(sigHashData));
-            obj.put("publicKey", KG.replaceKey(false, "public.pem"));
+            obj.put("publicKey", KG.replaceKey(false, "ECDSApublic.pem","ECDSA"));
             data.put("oHashSignature", obj);
             contract.step++;
             contract.fileData = data;
@@ -201,7 +201,7 @@ public class BCManager {
                 obj.put("plain", hashData);
                 byte[] sigHashData = addSignature(hashData.getBytes(StandardCharsets.UTF_8));
                 obj.put("sig", Base64.getEncoder().encodeToString(sigHashData));
-                obj.put("publicKey", KG.replaceKey(false, "public.pem"));
+                obj.put("publicKey", KG.replaceKey(false, "ECDSApublic.pem","ECDSA"));
                 data.put("wHashSignature", obj);
                 contract.step++;
                 contract.fileData = data;

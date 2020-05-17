@@ -1,4 +1,7 @@
 package util;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -39,5 +42,14 @@ public class StringUtil {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	public static String readPemString(String filename) throws IOException {
+		StringBuilder pem = new StringBuilder();
+		BufferedReader br = new BufferedReader(new FileReader(filename));
+		String line;
+		while ((line = br.readLine()) != null)
+			pem.append(line);
+		br.close();
+		return pem.toString();
 	}
 }

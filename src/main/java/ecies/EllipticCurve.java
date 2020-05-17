@@ -9,7 +9,12 @@ package ecies;
 
 import djb.Curve25519;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import util.KeyGenerator;
+
+import java.io.File;
+import java.io.IOException;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 
 /**
  *
@@ -27,12 +32,21 @@ public class EllipticCurve {
      * @return byte[][]{ byte[] privateKey, byte[] publicKey }
      */
 
-
-    public byte[][] generateKeyPair() {
+    public byte[][] generateKeyPair() throws IOException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyGenerator KG = new KeyGenerator();
         Security.addProvider(new BouncyCastleProvider());
-
-        byte[] privateKey = ecies.getRandomNumber(ecies.getKeySize());
-        byte[] publicKey = new byte[ecies.getKeySize()];
+        File keyFile = new File("ECIESprivate.pem");
+        byte[] privateKey, publicKey;
+        if (!keyFile.exists()) {
+            System.out.println("keyfile isn't exist");
+            privateKey = ecies.getRandomNumber(ecies.getKeySize());
+            publicKey = new byte[ecies.getKeySize()];
+            KG.writeECIESKey(publicKey,privateKey);
+        }
+        else {
+            privateKey = KG.readECIESPrivateKeyFromPemFile("ECIESprivate.pem");
+            publicKey = KG.readECIESPublicKeyFromPemFile("ECIESpublic.pem");
+        }
         Curve25519.keygen(publicKey, null, privateKey);
 
         return new byte[][]{ privateKey, publicKey };

@@ -116,6 +116,7 @@ public class HEManager {
         user.ChangeUserR();
         //일단 oName이라 해두는데 , 이건 자기 타입에 맞게 oName or wName으로 분기시키면 될듯
         Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(StringUtil.SHA1(contract.fileData.get("oName").toString()),16),user.getAu(), KGC.pkSet),contract.fileData);
+        System.out.println("file id: "+fileId);
         //키워드 기반 암호문 생성
         CipherData[] cipherDatas = new CipherData[2];
         for(int i = 0; i<2;i++){ //한 파일에 키워드가 2개니까 !

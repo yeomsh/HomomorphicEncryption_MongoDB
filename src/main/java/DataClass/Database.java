@@ -55,7 +55,7 @@ public class Database {
 //    System.out.println(server.nosqldb.zindex.find(Filters.and(eq("ip","000.000.000.000"),elemMatch("contractList",eq("cid",1)))).first());
 
         Document contractDoc = ContractDoc(contract);
-        System.out.println("database> insertUserContract: doc's _id : " + contractDoc.get("_id").toString());
+
         if (contract._id == null) { //step 1 이란 의미 (아직 _id x)
             user.updateOne(eq("ip", myUser.ip), Updates.addToSet("contractList", contractDoc));
             user.updateOne(eq("ip", contract.receiverIP), Updates.addToSet("contractList", contractDoc));
@@ -69,7 +69,7 @@ public class Database {
             user.updateOne(Filters.and(eq("ip", myUser.ip), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
             user.updateOne(Filters.and(eq("ip", contract.receiverIP), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
         }
-
+        System.out.println("database> insertUserContract: doc's _id : " + contractDoc.get("_id").toString());
         //만약 contractDOC이 step 1 이 아니라 2,3,4 라면 replace 해야함
     }
     public ArrayList<Contract> getUserContractList(String ip){
