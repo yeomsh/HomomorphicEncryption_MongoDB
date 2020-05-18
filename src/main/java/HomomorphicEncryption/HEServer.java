@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -150,7 +151,7 @@ public class HEServer {
     }
 
 
-    public Vector<JSONObject> searchKeyword_nosql(CipherData cipherData) {
+    public Vector<JSONObject> searchKeyword_nosql(CipherData cipherData) throws ParseException {
         //         3. 검색
         //            1) kewordPEKS로 있는 키워드 찾기 -> keywordId기억
         //            2) 해당 keywordId 를 zindex에서 찾아, file : exist 값 가져옴
@@ -202,6 +203,7 @@ public class HEServer {
                 //c2 c3비교
                 if (keywordTest(cipherData, cipherContract)) { //파일에 속한 권한 비교
                     keywordFile.add(cipherContract.fileData);
+                    System.out.println("addKeywordFile" + cipherContract.fileData.toJSONString());
                 }
             }
 

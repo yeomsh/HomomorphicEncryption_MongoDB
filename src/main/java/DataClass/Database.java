@@ -4,8 +4,11 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -29,11 +32,20 @@ public class Database {
         user = database.getCollection("user");
     }
     public Document userDoc(User user){
-        return new Document("id",user.id.toString(16)).append("userType",user.userType.ordinal()).append("ip",user.ip);
+        return new Document("id",user.id.toString(16))
+                .append("userType",user.userType.ordinal())
+                .append("ip",user.ip)
+                .append("ECIESpk", Base64.toBase64String(user.eciesPublicKey));
     }
     public Document ContractDoc(Contract contract){
-        return new Document("_id",new ObjectId()).append("step",contract.step).append("receiverIP",contract.receiverIP).append("file",contract.fileData);
+        return new Document("_id",new ObjectId())
+                .append("step",contract.step)
+                .append("receiverIP",contract.receiverIP)
+                //.append("file",contract.fileData)
+                .append("IV",Base64.toBase64String(contract.IV))
+                .append("cipher",Base64.toBase64String(contract.cipher));
     }
+
     public void removeStepContract(Contract contract){
         //$(index) 위치의 element 지우기(using unset)->null로 바뀜
         BasicDBObject data = new BasicDBObject();
@@ -63,7 +75,9 @@ public class Database {
             contractDoc.put("_id", contract._id);
             BasicDBObject data = new BasicDBObject();
             data.put("contractList.$.step", contract.step);
-            data.put("contractList.$.file", contract.fileData);
+            //data.put("contractList.$.file", contract.fileData);
+            data.put("contractList.$.IV", Base64.toBase64String(contract.IV));
+            data.put("contractList.$.cipher", Base64.toBase64String(contract.cipher));
             BasicDBObject command = new BasicDBObject();
             command.put("$set", data);
             user.updateOne(Filters.and(eq("ip", myUser.ip), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
@@ -72,7 +86,7 @@ public class Database {
         System.out.println("database> insertUserContract: doc's _id : " + contractDoc.get("_id").toString());
         //만약 contractDOC이 step 1 이 아니라 2,3,4 라면 replace 해야함
     }
-    public ArrayList<Contract> getUserContractList(String ip){
+    public ArrayList<Contract> getUserContractList(String ip) throws ParseException {
         ArrayList<Contract> contractList = new ArrayList<>();
         BasicDBObject filter = new BasicDBObject();
         filter.put("_id",0);
@@ -143,4 +157,18 @@ public class Database {
         System.out.println(myUser.toString());
         return myUser;
     }
+
+    public String getReceiperECIESpk(String receiperIP){
+        cursor = user.find(Filters.eq("ip",receiperIP)).iterator();
+        if(cursor.hasNext()){
+            String temp = cursor.next().get("ECIESpk").toString();
+            System.out.println("receiperIp, ECEISpk : " + receiperIP + "," + temp);
+            return temp;
+            //return cursor.next().get("ECIESpk").toString();
+        }
+        else
+            System.out.println("receiperIp에 해당하는 ECEISpk 없음");
+        return null;
+    }
+
 }

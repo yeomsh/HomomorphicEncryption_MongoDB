@@ -16,6 +16,8 @@ dependencies {
     compile 'org.mongodb:mongodb-driver-sync:4.0.1'
     compile 'org.mongodb:mongodb-driver-legacy:4.0.1'
     compile 'org.zeromq:curve25519-java:0.1.0'
-    compile files('libs/bcprov-jdk15on-162.jar')
-    compile files('libs/json-simple-1.1.1.jar')
+    compile 'org.json:json:20171018'
+    compile 'com.googlecode.json-simple:json-simple:1.1.1'
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
+    compile 'org.bouncycastle:bcprov-jdk15on:1.62'
 }

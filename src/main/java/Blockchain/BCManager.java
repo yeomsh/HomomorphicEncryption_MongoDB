@@ -5,16 +5,15 @@ import DataClass.DataSource;
 import DataClass.Database;
 import DataClass.User;
 import GUI.ContractGUI;
+import ecies.ECIESManager;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import util.KeyGenerator;
 import util.StringUtil;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -37,23 +36,44 @@ public class BCManager {
     public User user;
     public KeyGenerator KG = new KeyGenerator();
     public DataSource.Callback callback = null;
-    public BCManager(Database db, String receiverIP) {
+    public ECIESManager eciesManager = new ECIESManager();
+
+    public BCManager(Database db, String receiverIP) throws Exception {
         this.db = db;
         this.contract = new Contract(0, receiverIP);
         this.contractGUI = new ContractGUI(this);
     }
 
-    public BCManager(User user, Database db, ArrayList<String> ipList,Contract contract) {
+    public BCManager(User user, Database db, ArrayList<String> ipList,Contract contract) throws Exception {
+        //계약서를 받아올 때 복호화해서 받아옴
         this.db = db;
         this.user = user;
         this.ipList = ipList;
         this.contract = contract;
+        this.contract.fileData = decryptCipherToFileData();
         this.contractGUI = new ContractGUI(this);
     }
-    public BCManager(User user, Database db, ArrayList<String> ipList, Contract contract, DataSource.Callback callback) {
+
+    public BCManager(User user, Database db, ArrayList<String> ipList, Contract contract, DataSource.Callback callback) throws Exception {
         this(user,db,ipList,contract);
         this.callback = callback;
         //점주 /근로자 마다 할 수 있는 step이 다른데 그것도 체크해야함
+    }
+
+    //cipher를 contractfiledata로 복호화
+    public JSONObject decryptCipherToFileData() throws Exception {
+        byte[] plainText = eciesManager.recipientDecrypt(contract.cipher,user.eciesPrivateKey,contract.IV);
+        String contractString = new String(plainText);
+        JSONParser parser = new JSONParser();
+        return (JSONObject) parser.parse(contractString);
+    }
+
+    public void saveContractWithCipher(JSONObject data) {
+        contract.step++;
+        contract.IV= eciesManager.makeIV();
+        String receiverPkString = db.getReceiperECIESpk(contract.receiverIP);
+        contract.cipher = eciesManager.senderEncrypt(receiverPkString,data.toJSONString(),contract.IV);
+        db.insertStepContract(contract);
     }
 
     public void chainUpdate() {
@@ -119,6 +139,7 @@ public class BCManager {
         block.put("nonce",b.getNonce());
         block.put("timeStamp", b.getTimeStamp());
     }
+
     protected byte[] addSignature(byte[] hashData){
         Signature ecdsa;
         byte[] bSig = null;
@@ -150,7 +171,7 @@ public class BCManager {
     }
 
     class BCEventHandler implements ActionListener {
-        void step4() throws InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, InvalidAlgorithmParameterException, IOException, NoSuchProviderException {
+        void step4() throws Exception {
             JSONObject data = contract.fileData;
             byte[] hashDataByte = ((JSONObject) data.get("wHashSignature")).get("plain").toString().getBytes(StandardCharsets.UTF_8);
             byte[] sigHashDataByte = Base64.getDecoder().decode(((JSONObject) data.get("wHashSignature")).get("sig").toString());
@@ -161,15 +182,15 @@ public class BCManager {
                 //체인 리퀘스트부터 쫙쫙 하면 될듯함
                 chainUpdate();
                 proofOfWork(((JSONObject) data.get("wHashSignature")).get("plain").toString());
-                if(broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
+                //if(broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
                     db.removeStepContract(contract); //임시서버에서 지우기
                     //키워드 업로드 -> 파일 업로드 -> zindex 업데이트
                     callback.onDataLoaded();
-                }
-                else{ //실패하면 그냥 끝
-                    System.out.println("브로드 캐스트에서 작업증명이 옳지않다고 나옴 -> 실패");
-                    callback.onDataFailed();
-                }
+                //}
+                //else{ //실패하면 그냥 끝
+                //    System.out.println("브로드 캐스트에서 작업증명이 옳지않다고 나옴 -> 실패");
+                //    callback.onDataFailed();
+                //}
             } else {
                 System.out.println("점주가 근로자 서명 검증 실패");
             }
@@ -182,11 +203,9 @@ public class BCManager {
             obj.put("sig", Base64.getEncoder().encodeToString(sigHashData));
             obj.put("publicKey", KG.replaceKey(false, "ECDSApublic.pem","ECDSA"));
             data.put("oHashSignature", obj);
-            contract.step++;
-            contract.fileData = data;
-            db.insertStepContract(contract);
+            saveContractWithCipher(data);
         }
-        void step3() throws InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, IOException {
+        void step3() throws Exception {
             JSONObject data = contract.fileData;
             System.out.println("data: \n" + data);
             byte[] hashDataByte = ((JSONObject) data.get("oHashSignature")).get("plain").toString().getBytes(StandardCharsets.UTF_8);
@@ -203,9 +222,8 @@ public class BCManager {
                 obj.put("sig", Base64.getEncoder().encodeToString(sigHashData));
                 obj.put("publicKey", KG.replaceKey(false, "ECDSApublic.pem","ECDSA"));
                 data.put("wHashSignature", obj);
-                contract.step++;
-                contract.fileData = data;
-                db.insertStepContract(contract);
+                saveContractWithCipher(data);
+
             } else {
                 System.out.println("서명 검증 실패");
             }
@@ -227,9 +245,7 @@ public class BCManager {
                         break;
                     case 1:
                     case 0:
-                        contract.step++;
-                        contract.fileData = data;
-                        db.insertStepContract(contract);
+                        saveContractWithCipher(data);
                         break;
                     default:
                         System.out.println("BCManager: undefined step: "+contract.step);
@@ -239,6 +255,8 @@ public class BCManager {
                 System.out.println("제출");
             } catch (InvalidKeySpecException | NoSuchAlgorithmException | SignatureException | IOException | InvalidAlgorithmParameterException | NoSuchProviderException invalidKeySpecException) {
                 invalidKeySpecException.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
 
         }

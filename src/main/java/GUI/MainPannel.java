@@ -12,6 +12,7 @@ public class MainPannel extends JPanel {
     public JComboBox comboBoxContract;
     public String[] contractList={};
     public JButton button;
+    public JButton button2;
     public Mode mode;
     public MainPannel() {
         this.setLayout(null);
@@ -44,6 +45,18 @@ public class MainPannel extends JPanel {
             button.setBounds(MainFrame.PANNEL_WIDTH/2-comboBoxWIDTH-10,MainFrame.HEIGHT/8-comboBoxHEIGHT,2*comboBoxWIDTH+20,comboBoxHEIGHT); //위치 바꿔야함
         }
         this.add(button);
+    }
+
+    public MainPannel(Mode mode, String btn,String btn2) {
+        this(mode, btn);
+
+        int comboBoxWIDTH = 150;
+        int comboBoxHEIGHT=30;
+
+        button2= new JButton(btn2);
+        button2.setBounds(MainFrame.PANNEL_WIDTH/2+10,MainFrame.HEIGHT/8,comboBoxWIDTH,comboBoxHEIGHT); //위치 바꿔야함
+        this.add(button2);
+
     }
     public void setComboBoxContract(ArrayList<Contract> contractList){
         this.comboBoxContract.removeAllItems();

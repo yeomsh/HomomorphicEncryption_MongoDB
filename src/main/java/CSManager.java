@@ -5,6 +5,7 @@ import DataClass.User;
 import GUI.MainFrame;
 import HomomorphicEncryption.*;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import util.*;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -94,7 +95,7 @@ public class CSManager {
         });
         System.out.println("최종 유저 수: "+ ipList.size());
     }
-    public Vector<JSONObject> searchKeyword(String keyword, User user){
+    public Vector<JSONObject> searchKeyword(String keyword, User user) throws ParseException {
         he.setUserPKSet(user);
         return he.searchKeyword(user,keyword);
     }
@@ -102,7 +103,7 @@ public class CSManager {
         he.setUserPKSet(user);
         he.requestToUpload(user,contract);
     }
-    public void loadContractData(){
+    public void loadContractData() throws ParseException {
         user.setContractList(db.getUserContractList(user.ip));
     }
     public void uploadUser() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {

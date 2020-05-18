@@ -21,6 +21,9 @@ public class User {
     public ArrayList<Contract> contractList = new ArrayList<>(); //체결중인 계약서 리스트
     public PrivateKey sigPrivateKey;
     public PublicKey sigPublicKey;
+    public byte[] eciesPrivateKey;
+    public byte[] eciesPublicKey;
+
     //HE에서 사용
     //private int qidRange = 100;
     private int rRange = 60;
@@ -39,6 +42,7 @@ public class User {
         this.ip = ip;
         this.userType = type == 0 ? USERTYPE.EMPLOYER : USERTYPE.WORKER;
         setECDSAKeySet();
+        setECIESKeySet();
         setQid(idList);
     }
     public User(Document d) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
@@ -46,17 +50,30 @@ public class User {
         this.id = new BigInteger(d.get("id").toString(),16);
         this.ip = d.get("ip").toString();
         this.userType = d.getInteger("userType") == 0 ? USERTYPE.EMPLOYER : USERTYPE.WORKER;
+//        this.eciesPublicKey = d.get("ECIESpk").toString().getBytes();
         setECDSAKeySet();
+        setECIESKeySet();
         setQid(null);
     }
     void setECDSAKeySet() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, IOException, InvalidKeySpecException {
-        File keyFile = new File("private.pem");
+        File keyFile = new File("ECDSAprivate.pem");
         if (!keyFile.exists()) {
             KG.makeECDSAKey();
         }
-        this.sigPrivateKey = KG.readECDSAPrivateKeyFromPemFile("private.pem");
-        this.sigPublicKey = KG.readECDSAPublicKeyFromPemFile("public.pem");
+        this.sigPrivateKey = KG.readECDSAPrivateKeyFromPemFile("ECDSAprivate.pem");
+        this.sigPublicKey = KG.readECDSAPublicKeyFromPemFile("ECDSApublic.pem");
     }
+
+    //public 없애기
+    public void setECIESKeySet() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, IOException, InvalidKeySpecException {
+        File keyFile = new File("ECIESprivate.pem");
+        if (!keyFile.exists()) {
+            KG.makeECIESKey();
+        }
+        this.eciesPrivateKey = KG.readECIESPrivateKeyFromPemFile("ECIESprivate.pem");
+        this.eciesPublicKey = KG.readECIESPublicKeyFromPemFile("ECIESpublic.pem");
+    }
+
     public String toString(){
         return "ip : "+ this.ip + ", id : " + this._id + ", userType : " + this.userType;
     }
@@ -106,9 +123,11 @@ public class User {
         BigInteger randVal = new BigInteger(20,rand);
         this.qid = this.id.multiply(randVal);
     }
+
     public void ChangeUserR(){
         r = new BigInteger(rRange,rand);
     }
+
     void makeUserKeySet(Vector<AGCDPublicKey> pkSet){
         //KGC 서버를 따로 돌리면서, 100개쯤 PK쌍을 생성해놓으면 유저가 그것중에 랜덤으로 10개 취하는것도 좋을것 같음 !
         if(this.pkSet.isEmpty()) {
@@ -128,6 +147,7 @@ public class User {
             }
         }
     }
+
     public void setAu(BigInteger au){
         this.au = au;
     }

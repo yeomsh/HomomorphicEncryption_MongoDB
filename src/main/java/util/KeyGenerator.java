@@ -21,6 +21,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Scanner;
 
+import ecies.ECIES;
+import ecies.EllipticCurve;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -28,6 +30,9 @@ public class KeyGenerator {
 	private final String ALGORITHM = "sect163k1";
 	private static BouncyCastleProvider bouncyCastleProvider;
 	public static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
+	public ECIES ecies = new ECIES();
+	public EllipticCurve ellipticCurve = new EllipticCurve(ecies);
+
 
 	public Scanner scan = new Scanner(System.in);
 	static {
@@ -48,9 +53,16 @@ public class KeyGenerator {
 		writePemFile(keyPair.getPrivate(), "ECDSA PRIVATE KEY", "ECDSAprivate.pem");
 		writePemFile(keyPair.getPublic(), "ECDSA PUBLIC KEY", "ECDSApublic.pem");
 	}
-	public void writeECIESKey(byte[] publicKey, byte[] privateKey) throws IOException {
-		writePemFile(publicKey, "ECIES PRIVATE KEY", "ECIESprivate.pem");
-		writePemFile(privateKey, "ECIES PUBLIC KEY", "ECIESpublic.pem");
+
+	public void makeECIESKey() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, IOException {
+		this.ellipticCurve = new EllipticCurve(new ECIES());
+		byte[][] eciesKeypair = ellipticCurve.generateKeyPair();
+		writeECIESKey(eciesKeypair[0],eciesKeypair[1]);
+
+	}
+	public void writeECIESKey(byte[] privateKey, byte[] publicKey) throws IOException {
+		writePemFile(privateKey, "ECIES PRIVATE KEY", "ECIESprivate.pem");
+		writePemFile(publicKey, "ECIES PUBLIC KEY", "ECIESpublic.pem");
 	}
 	private void writePemFile(byte[] key, String description, String filename) throws IOException {
 		Pem pemFile = new Pem(key, description);

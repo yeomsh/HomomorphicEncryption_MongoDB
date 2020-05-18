@@ -9,6 +9,7 @@ import javax.swing.*;
 import Blockchain.BCManager;
 import DataClass.Contract;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 public class ContractGUI extends JFrame {
 
@@ -64,11 +65,16 @@ public class ContractGUI extends JFrame {
    JTextField txtAddr, txtAge;
    JButton btnSubmit, btnCancel;
 
-   public ContractGUI(BCManager manager){ //BCManager 에서 호출됨
+   public ContractGUI(BCManager manager) throws Exception { //BCManager 에서 호출됨
       this();
       contract = manager.contract;
       setPanel();
       btnSubmit.addActionListener(manager.eventHandler);
+   }
+
+   public ContractGUI(JSONObject contract) throws Exception { //BCManager 에서 호출됨
+      this();
+      showPannel(contract);
    }
 
    public ContractGUI() {
@@ -88,7 +94,7 @@ public class ContractGUI extends JFrame {
 
       btnCancel.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null,"계약서 작성을 취소합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null,"진행하던 작업을 취소합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
             setVisible(false);
             System.out.println("취소");
             //System.exit(0);
@@ -102,7 +108,7 @@ public class ContractGUI extends JFrame {
    }
 
    public void setPanel(){
-      System.out.println("contract gui: set panel , step: "+contract.step);
+      System.out.println("contract gui: set panel , step: "+ contract.step);
       switch (contract.step+1){ //step에 저장된 값은 이전 단계에서 작성된 것이  +1
          case 1:
             setStep1Contract();
@@ -119,9 +125,26 @@ public class ContractGUI extends JFrame {
          case 5:
             setStep5Contract(contract.fileData);
          default:
+
             break;
       }
    }
+
+   public void showPannel(JSONObject data) throws Exception {
+      setContractField(data);
+      setVisiableAllFalse();
+      btnSubmit.setText("확인");
+      btnCancel.setText("닫기");
+      setVisible(true);
+      btnSubmit.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(null, "확인", "Message", JOptionPane.INFORMATION_MESSAGE);
+            setVisible(false);
+         }
+      });
+   }
+
    // step1 점주가 근로계약서 작성
    public void setStep1Contract() {
       setVisiableAllFalse();

@@ -54,6 +54,7 @@ public class MainFrame extends JFrame{
 		mpNew.button.addActionListener(mListener);
 		mpContinue.button.addActionListener(mListener);
 		mpSearch.button.addActionListener(mListener);
+		mpSearch.button2.addActionListener(mListener);
 		signUpDialog.okButton.addActionListener(mListener);
 	}
 	public void setListener(ChangeListener mListener){
@@ -62,7 +63,7 @@ public class MainFrame extends JFrame{
 	public void makePannel() {
 		mpNew = new MainPannel(Mode.CONTRACT_NEW, "시작하기");
 		mpContinue = new MainPannel(Mode.CONTRACT_CONTINUE,"이어하기");
-		mpSearch = new MainPannel(Mode.CONTRACT_SEARCH,"검색하기");
+		mpSearch = new MainPannel(Mode.CONTRACT_SEARCH,"검색하기","보기");
 	}
 	public void makeTopTab() {
 		//상단 탭(계약 시작하기/ 계약 이어하기/ 검색하기/ 동기화)

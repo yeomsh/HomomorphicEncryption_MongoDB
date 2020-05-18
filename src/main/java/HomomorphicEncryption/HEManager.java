@@ -2,6 +2,7 @@ package HomomorphicEncryption;
 
 import DataClass.User;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import util.StringUtil;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -156,7 +157,7 @@ public class HEManager {
 
     }
     //키워드 검색
-    public static Vector<JSONObject> searchKeyword(User user, String keyword){
+    public static Vector<JSONObject> searchKeyword(User user, String keyword) throws ParseException {
         user.setAu(KGC.shareAlpha());
         long start = System.currentTimeMillis();
         user.ChangeUserR();
