@@ -62,14 +62,15 @@ public class Database {
         user.updateOne(Filters.eq("ip", myUser.ip), command);
         user.updateOne(Filters.eq("ip", contract.receiverIP), command);
     }
-    public void insertStepContract(Contract contract) {
+    public void insertStepContract(Contract contract, byte[] cipher) {
         //문제의 user의 contractlist 업데이트 함수
 //    System.out.println(server.nosqldb.zindex.find(Filters.and(eq("ip","000.000.000.000"),elemMatch("contractList",eq("cid",1)))).first());
 
         Document contractDoc = ContractDoc(contract);
-
         if (contract._id == null) { //step 1 이란 의미 (아직 _id x)
             user.updateOne(eq("ip", myUser.ip), Updates.addToSet("contractList", contractDoc));
+            contractDoc.replace("receiverIP",myUser.ip);
+            contractDoc.replace("cipher",Base64.toBase64String(cipher)); //receiver의 공개키로 암호화한 contract cipher로 교체
             user.updateOne(eq("ip", contract.receiverIP), Updates.addToSet("contractList", contractDoc));
         } else {
             contractDoc.put("_id", contract._id);
@@ -81,6 +82,8 @@ public class Database {
             BasicDBObject command = new BasicDBObject();
             command.put("$set", data);
             user.updateOne(Filters.and(eq("ip", myUser.ip), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
+            data.replace("contractList.$.cipher", Base64.toBase64String(cipher));
+            command.replace("$set", data);
             user.updateOne(Filters.and(eq("ip", contract.receiverIP), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
         }
         System.out.println("database> insertUserContract: doc's _id : " + contractDoc.get("_id").toString());

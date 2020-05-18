@@ -33,21 +33,21 @@ public class EllipticCurve {
      */
 
     public byte[][] generateKeyPair() throws IOException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeySpecException {
-        //KeyGenerator KG = new KeyGenerator();
+        KeyGenerator KG = new KeyGenerator();
         Security.addProvider(new BouncyCastleProvider());
-        //File keyFile = new File("ECIESprivate.pem");
+        File keyFile = new File("ECIESprivate.pem");
         byte[] privateKey, publicKey;
-        //if (!keyFile.exists()) {
+        if (!keyFile.exists()) {
             System.out.println("keyfile isn't exist");
             privateKey = ecies.getRandomNumber(ecies.getKeySize());
             publicKey = new byte[ecies.getKeySize()];
-            Curve25519.keygen(publicKey, null, privateKey);
-            //KG.writeECIESKey(privateKey,publicKey);
-        //}
-//        else {
-//            privateKey = KG.readECIESPrivateKeyFromPemFile("ECIESprivate.pem");
-//            publicKey = KG.readECIESPublicKeyFromPemFile("ECIESpublic.pem");
-//        }
+            KG.writeECIESKey(publicKey,privateKey);
+        }
+        else {
+            privateKey = KG.readECIESPrivateKeyFromPemFile("ECIESprivate.pem");
+            publicKey = KG.readECIESPublicKeyFromPemFile("ECIESpublic.pem");
+        }
+        Curve25519.keygen(publicKey, null, privateKey);
 
         return new byte[][]{ privateKey, publicKey };
     }

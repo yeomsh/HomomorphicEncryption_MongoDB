@@ -40,6 +40,7 @@ public class BCManager {
 
     public BCManager(Database db, String receiverIP) throws Exception {
         this.db = db;
+        this.user = db.myUser;
         this.contract = new Contract(0, receiverIP);
         this.contractGUI = new ContractGUI(this);
     }
@@ -71,9 +72,11 @@ public class BCManager {
     public void saveContractWithCipher(JSONObject data) {
         contract.step++;
         contract.IV= eciesManager.makeIV();
-        String receiverPkString = db.getReceiperECIESpk(contract.receiverIP);
-        contract.cipher = eciesManager.senderEncrypt(receiverPkString,data.toJSONString(),contract.IV);
-        db.insertStepContract(contract);
+        System.out.println(user);
+        String PkString = db.getReceiperECIESpk(user.ip);
+        contract.cipher = eciesManager.senderEncrypt(PkString,data.toJSONString(),contract.IV);
+        PkString = db.getReceiperECIESpk(contract.receiverIP);
+        db.insertStepContract(contract,eciesManager.senderEncrypt(PkString,data.toJSONString(),contract.IV));
     }
 
     public void chainUpdate() {
@@ -182,15 +185,15 @@ public class BCManager {
                 //체인 리퀘스트부터 쫙쫙 하면 될듯함
                 chainUpdate();
                 proofOfWork(((JSONObject) data.get("wHashSignature")).get("plain").toString());
-                //if(broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
+                if(broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
                     db.removeStepContract(contract); //임시서버에서 지우기
                     //키워드 업로드 -> 파일 업로드 -> zindex 업데이트
                     callback.onDataLoaded();
-                //}
-                //else{ //실패하면 그냥 끝
-                //    System.out.println("브로드 캐스트에서 작업증명이 옳지않다고 나옴 -> 실패");
-                //    callback.onDataFailed();
-                //}
+                }
+                else { //실패하면 그냥 끝
+                        System.out.println("브로드 캐스트에서 작업증명이 옳지않다고 나옴 -> 실패");
+                        callback.onDataFailed();
+                }
             } else {
                 System.out.println("점주가 근로자 서명 검증 실패");
             }

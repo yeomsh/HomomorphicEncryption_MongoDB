@@ -2,10 +2,12 @@ package HomomorphicEncryption;
 
 import DataClass.Contract;
 import DataClass.Database;
+import DataClass.User;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import org.bouncycastle.util.encoders.Base64;
 import org.bson.Document;
 import org.json.simple.JSONObject;
 
@@ -24,7 +26,8 @@ public class NoSQLDB extends Database{
     MongoCollection<Document> filePEKS;
     MongoCollection<Document> zindex;
 
-    public NoSQLDB(){
+    public NoSQLDB(User user){
+        this.myUser = user;
         keywordPEKS = database.getCollection("keywordPEKS");
         filePEKS = database.getCollection("filePEKS");
         zindex = database.getCollection("zindex");
@@ -35,8 +38,8 @@ public class NoSQLDB extends Database{
         zindex.drop();
         user.drop();
     }
-    public Object insertContract(CipherData cipherData, JSONObject file){
-        Document filedoc = fileDoc(cipherData.c2, cipherData.c3,file);
+    public Object insertContract(CipherData cipherData, Contract contract){
+        Document filedoc = fileDoc(cipherData.c2, cipherData.c3,contract);
         filePEKS.insertOne(filedoc);
         cipherData.setFileId(filedoc.get("_id"));
         return filedoc.get("_id");
@@ -54,8 +57,8 @@ public class NoSQLDB extends Database{
         return new Document("c1", c1.toString(16)).append("c2", c2.toString(16));
     }
 
-    public Document fileDoc(BigInteger c2, BigInteger c3, JSONObject file){
-        return new Document("c2", c2.toString(16)).append("c3", c3.toString(16)).append("file",file);
+    public Document fileDoc(BigInteger c2, BigInteger c3, Contract contract){
+        return new Document("c2", c2.toString(16)).append("c3", c3.toString(16)).append("file",new Document("IV", Base64.toBase64String(contract.IV)).append("cipher",Base64.toBase64String(contract.cipher)));
     }
 
     public Document zIndexFileInfoDoc(Object _id, Boolean exist){
@@ -79,7 +82,7 @@ public class NoSQLDB extends Database{
         //키워드 2개에 대해 fileList 작업
         for(Object keywordId: uploadKeywordMap.keySet()){
             System.out.println("KeywordId: "+keywordId);
-            if(uploadKeywordMap.get(keywordId)){
+            if(uploadKeywordMap.get(keywordId)){ //기존에 있던 키워드
                 System.out.println("true 실행");
                 zindex.updateOne(Filters.and(eq("_id", keywordId), elemMatch("fileList", eq(fileId))), command); //기존에 있던 키워드라면, 해당 키워드 id로 접근하여, fileid 의 exist 값을 1로 업데이트
             }

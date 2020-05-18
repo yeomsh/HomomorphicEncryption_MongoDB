@@ -68,7 +68,7 @@ public class CSManager {
         //db 변수 init
         db= new Database();
         //server에서 noSQLDB생성 -> 근데 he와 연관없는 db작업이 필요해서 db변수를 만들었어 ! - 승연
-        he = new HEManager();
+
         //블록체인 서버 OPEN
         server = new Server(3000,chainStr);
     }
@@ -78,7 +78,6 @@ public class CSManager {
         //로그인하면 -> 로그인
         //회원가입하면, 키 발급, 아이디 발급, (kgc공개키는 키워드 등록할 때 받기(?)), 데베 등록
         myIp = mHandler.showInitDialog();
-        boolean isAlreadyUser = false;
         frame.addLog("사용자의 Ip : "+myIp);
         ipList = db.getIpList(myIp, new DataSource.Callback() {
             @Override
@@ -93,9 +92,10 @@ public class CSManager {
                 mHandler.showSignUpDialog();
             }
         });
+        he = new HEManager(user);
         System.out.println("최종 유저 수: "+ ipList.size());
     }
-    public Vector<JSONObject> searchKeyword(String keyword, User user) throws ParseException {
+    public Vector<JSONObject> searchKeyword(String keyword, User user) throws Exception {
         he.setUserPKSet(user);
         return he.searchKeyword(user,keyword);
     }

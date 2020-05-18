@@ -4,8 +4,10 @@ import DataClass.Contract;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
+import ecies.ECIESManager;
 import org.bson.Document;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.math.BigInteger;
@@ -21,10 +23,10 @@ public class HEServer {
     private BigInteger p; //서버의 개인키
     private BigInteger a; //서버alpha
     public NoSQLDB nosqldb;
-    public HEServer(BigInteger p, BigInteger a) {
+    public HEServer(BigInteger p, BigInteger a, NoSQLDB noSQLDB) {
         this.p = p;
         this.a = a;
-        this.nosqldb = new NoSQLDB();
+        this.nosqldb = noSQLDB;
     }
 
     public void addSystemAlpha(CipherData cipherData) { //user alpha 지우고, system alpha 입히기
@@ -102,14 +104,14 @@ public class HEServer {
     }
 
     //계약서 업로드
-    public Object uploadContract_nosql(CipherData cipherData, JSONObject file) {
+    public Object uploadContract_nosql(CipherData cipherData, Contract contract) {
         //만약 updateData 함수를 바꾼다면 여기서 updateData한 다음 파일 추가
         //단, 복사본을 생성해서 바꾼 데이터로 사용
         CipherData copydata = cipherData;
         addSystemAlpha(copydata);
         //파일 업로드
         //file id값 기억 필요 (data에 fileid추가)
-        return nosqldb.insertContract(copydata,file);
+        return nosqldb.insertContract(copydata,contract);
     }
 
     //키워드 업로드 및 처음 생성하는 키워드에 대한 zindex 생성
@@ -151,7 +153,7 @@ public class HEServer {
     }
 
 
-    public Vector<JSONObject> searchKeyword_nosql(CipherData cipherData) throws ParseException {
+    public Vector<JSONObject> searchKeyword_nosql(CipherData cipherData) throws Exception {
         //         3. 검색
         //            1) kewordPEKS로 있는 키워드 찾기 -> keywordId기억
         //            2) 해당 keywordId 를 zindex에서 찾아, file : exist 값 가져옴
@@ -202,13 +204,19 @@ public class HEServer {
                 CipherContract cipherContract = new CipherContract(doc);
                 //c2 c3비교
                 if (keywordTest(cipherData, cipherContract)) { //파일에 속한 권한 비교
-                    keywordFile.add(cipherContract.fileData);
-                    System.out.println("addKeywordFile" + cipherContract.fileData.toJSONString());
+                    keywordFile.add(decryptCipherToFileData(cipherContract));
                 }
             }
 
         }
         System.out.println("this is the correctFile : " + keywordFile.size());
         return keywordFile;
+    }
+    public JSONObject decryptCipherToFileData(Contract contract) throws Exception {
+        ECIESManager eciesManager = new ECIESManager();
+        byte[] plainText = eciesManager.recipientDecrypt(contract.cipher, nosqldb.myUser.eciesPrivateKey,contract.IV);
+        String contractString = new String(plainText);
+        JSONParser parser = new JSONParser();
+        return (JSONObject) parser.parse(contractString);
     }
 }

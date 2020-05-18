@@ -94,6 +94,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                                 , new DataSource.Callback() {
                             @Override //HE 작업하기
                             public void onDataLoaded(){
+
                                 manager.uploadContract(contract);
                             }
                             @Override //그냥 끝내기
@@ -126,6 +127,8 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                     keywordFile = manager.searchKeyword(keyword,manager.user);
                 } catch (ParseException ex) {
                     ex.printStackTrace();
+                } catch (Exception exception) {
+                    exception.printStackTrace();
                 }
 
                 for(JSONObject i : keywordFile)

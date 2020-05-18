@@ -46,15 +46,18 @@ public class Contract {
             this.step = Integer.parseInt(d.get("step").toString());
             this.receiverIP = d.getString("receiverIP");
             //obj = parser.parse(((Document) d.get("file")).toJson());
-            this.IV = Base64.decode(d.get("IV").toString());
-            this.cipher = Base64.decode(d.get("cipher").toString());
+//            this.IV = Base64.decode(d.get("IV").toString());
+//            this.cipher = Base64.decode(d.get("cipher").toString());
         }
         else {
-            JSONParser parser = new JSONParser();
-            Object obj =  parser.parse(d.toJson());
-            this.fileData = (JSONObject) obj;
+//            JSONParser parser = new JSONParser();
+//            Object obj =  parser.parse(d.toJson());
+//            this.fileData = (JSONObject) obj;
+
 
         }
+        this.IV = Base64.decode(d.get("IV").toString());
+        this.cipher = Base64.decode(d.get("cipher").toString());
         //this.fileData = (JSONObject) obj;
     }
 

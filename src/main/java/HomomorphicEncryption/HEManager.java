@@ -13,9 +13,9 @@ public class HEManager {
     public static KGC KGC;
     public static HEServer HEServer;
 
-    public HEManager(){
+    public HEManager(User user){
         KGC = new KGC(new BigInteger("10"));
-        HEServer = new HEServer(KGC.getP(), KGC.getA());
+        HEServer = new HEServer(KGC.getP(), KGC.getA(), new NoSQLDB(user));
     }
     public void setUserPKSet(User user){
         user.setPKSet(KGC.pkSet);
@@ -23,7 +23,7 @@ public class HEManager {
     public static void main(String args[]) {
 
         //시작 전 kgc 및 server 생성
-        settingToStart();
+   //     settingToStart();
 
         //user생성
         User userA = new User();
@@ -40,7 +40,7 @@ public class HEManager {
         file.put("key","value");
         file.put("key2","염");
 
-        requestToUpload(userA, new String[]{a, b},file);
+       // requestToUpload(userA, new String[]{a, b},file);
         //현재 키워드 20개
         //파일 10개
 //        for (int i = 0; i < 500; i++)
@@ -85,9 +85,9 @@ public class HEManager {
 
 
     //시작전 kgc 및 server 생성
-    public static void settingToStart(){
+    public static void settingToStart(User user){
         KGC = new KGC(new BigInteger("10"));
-        HEServer = new HEServer(KGC.getP(), KGC.getA());
+        HEServer = new HEServer(KGC.getP(), KGC.getA(), new NoSQLDB(user));
     }
 
 
@@ -116,7 +116,7 @@ public class HEManager {
         //점주는 노동자의 qid를 모르기때뭉네 한꺼번에 업로드할 수 없음
         user.ChangeUserR();
         //일단 oName이라 해두는데 , 이건 자기 타입에 맞게 oName or wName으로 분기시키면 될듯
-        Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(StringUtil.SHA1(contract.fileData.get("oName").toString()),16),user.getAu(), KGC.pkSet),contract.fileData);
+        Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(StringUtil.SHA1(contract.fileData.get("oName").toString()),16),user.getAu(), KGC.pkSet),contract);
         System.out.println("file id: "+fileId);
         //키워드 기반 암호문 생성
         CipherData[] cipherDatas = new CipherData[2];
@@ -131,33 +131,33 @@ public class HEManager {
         long end = System.currentTimeMillis();
         System.out.println("파일 업로드 시간 : " + (end-start));
     }
-    //파일 업로드
-    public static void requestToUpload(User user, String[] keywords, JSONObject file){
-        user.setAu(KGC.shareAlpha());
-        long start = System.currentTimeMillis();
-        //근로자 or 점주 둘 중한명만 파일등록함
-        user.ChangeUserR();
-        System.out.println("user.pkset " + user.pkSet);
-        System.out.println("user.getAu() : " + user.getAu());
-        System.out.println("kgc.pkset0 : " + KGC.pkSet.get(0));
-        Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(StringUtil.SHA1(keywords[0]),16),user.getAu(), KGC.pkSet),file);
-        //키워드 기반 암호문 생성
-        CipherData[] cipherDatas = new CipherData[2];
-        for(int i = 0; i<2;i++){ //한 파일에 키워드가 2개니까 !
-            user.ChangeUserR();
-            cipherDatas[i] = new CipherData(user, new BigInteger(StringUtil.SHA1(keywords[i]),16),user.getAu(), KGC.pkSet);
-        }
-        System.out.println("requestToUpload: uploadKeyword_nosql");
-        //Vector<Object> saveKeywordId = HEServer.uploadKeyword_nosql(cipherDatas);
-        HashMap<Object,Boolean> uploadKeywordMap = HEServer.uploadKeyword_nosql(cipherDatas);
-        System.out.println("requestToUpload: updateZString_nosql");
-        HEServer.updateZString_nosql(uploadKeywordMap,fileId);
-        long end = System.currentTimeMillis();
-        System.out.println("파일 업로드 시간 : " + (end-start));
-
-    }
+//    //파일 업로드
+//    public static void requestToUpload(User user, String[] keywords, JSONObject file){
+//        user.setAu(KGC.shareAlpha());
+//        long start = System.currentTimeMillis();
+//        //근로자 or 점주 둘 중한명만 파일등록함
+//        user.ChangeUserR();
+//        System.out.println("user.pkset " + user.pkSet);
+//        System.out.println("user.getAu() : " + user.getAu());
+//        System.out.println("kgc.pkset0 : " + KGC.pkSet.get(0));
+//        Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(StringUtil.SHA1(keywords[0]),16),user.getAu(), KGC.pkSet),file);
+//        //키워드 기반 암호문 생성
+//        CipherData[] cipherDatas = new CipherData[2];
+//        for(int i = 0; i<2;i++){ //한 파일에 키워드가 2개니까 !
+//            user.ChangeUserR();
+//            cipherDatas[i] = new CipherData(user, new BigInteger(StringUtil.SHA1(keywords[i]),16),user.getAu(), KGC.pkSet);
+//        }
+//        System.out.println("requestToUpload: uploadKeyword_nosql");
+//        //Vector<Object> saveKeywordId = HEServer.uploadKeyword_nosql(cipherDatas);
+//        HashMap<Object,Boolean> uploadKeywordMap = HEServer.uploadKeyword_nosql(cipherDatas);
+//        System.out.println("requestToUpload: updateZString_nosql");
+//        HEServer.updateZString_nosql(uploadKeywordMap,fileId);
+//        long end = System.currentTimeMillis();
+//        System.out.println("파일 업로드 시간 : " + (end-start));
+//
+//    }
     //키워드 검색
-    public static Vector<JSONObject> searchKeyword(User user, String keyword) throws ParseException {
+    public static Vector<JSONObject> searchKeyword(User user, String keyword) throws Exception {
         user.setAu(KGC.shareAlpha());
         long start = System.currentTimeMillis();
         user.ChangeUserR();

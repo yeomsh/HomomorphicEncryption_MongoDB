@@ -32,9 +32,6 @@ public class KeyGenerator {
 	public static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
 	public ECIES ecies = new ECIES();
 	public EllipticCurve ellipticCurve = new EllipticCurve(ecies);
-
-
-	public Scanner scan = new Scanner(System.in);
 	static {
 		bouncyCastleProvider = BOUNCY_CASTLE_PROVIDER;
 	}

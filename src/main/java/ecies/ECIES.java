@@ -40,7 +40,6 @@ public class ECIES {
         random.nextBytes(r);
         return r;
     }
-
     /**
      *
      * @return int
