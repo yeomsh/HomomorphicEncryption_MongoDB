@@ -11,7 +11,10 @@ import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
@@ -35,12 +38,13 @@ public class Database {
         return new Document("id",user.id.toString(16))
                 .append("userType",user.userType.ordinal())
                 .append("ip",user.ip)
+                .append("uid",sha256(user.uid))
                 .append("ECIESpk", Base64.toBase64String(user.eciesPublicKey));
     }
     public Document ContractDoc(Contract contract){
         return new Document("_id",new ObjectId())
                 .append("step",contract.step)
-                .append("receiverIP",contract.receiverIP)
+                .append("receiverUid",contract.receiverUid)
                 //.append("file",contract.fileData)
                 .append("IV",Base64.toBase64String(contract.IV))
                 .append("cipher",Base64.toBase64String(contract.cipher));
@@ -52,15 +56,15 @@ public class Database {
         data.put("contractList.$",1);
         BasicDBObject command = new BasicDBObject();
         command.put("$unset", data);
-        user.updateOne(Filters.and(eq("ip", myUser.ip), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
-        user.updateOne(Filters.and(eq("ip", contract.receiverIP), elemMatch("contractList", eq(contract._id))), command);
+        user.updateOne(Filters.and(eq("uid", sha256(myUser.uid)), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
+        user.updateOne(Filters.and(eq("uid", contract.receiverUid), elemMatch("contractList", eq(contract._id))), command);
         //array에 있는 null 모두 삭제(using pull)
         data.remove("contractList.$");
         data.put("contractList", null);
         command.remove("$unset");
         command.put("$pull", data);
-        user.updateOne(Filters.eq("ip", myUser.ip), command);
-        user.updateOne(Filters.eq("ip", contract.receiverIP), command);
+        user.updateOne(Filters.eq("uid", sha256(myUser.uid)), command);
+        user.updateOne(Filters.eq("uid", contract.receiverUid), command);
     }
     public void insertStepContract(Contract contract, byte[] cipher) {
         //문제의 user의 contractlist 업데이트 함수
@@ -68,10 +72,10 @@ public class Database {
 
         Document contractDoc = ContractDoc(contract);
         if (contract._id == null) { //step 1 이란 의미 (아직 _id x)
-            user.updateOne(eq("ip", myUser.ip), Updates.addToSet("contractList", contractDoc));
-            contractDoc.replace("receiverIP",myUser.ip);
+            user.updateOne(eq("uid", myUser.uid), Updates.addToSet("contractList", contractDoc));
+            contractDoc.replace("receiverUid",myUser.uid);
             contractDoc.replace("cipher",Base64.toBase64String(cipher)); //receiver의 공개키로 암호화한 contract cipher로 교체
-            user.updateOne(eq("ip", contract.receiverIP), Updates.addToSet("contractList", contractDoc));
+            user.updateOne(eq("uid", contract.receiverUid), Updates.addToSet("contractList", contractDoc));
         } else {
             contractDoc.put("_id", contract._id);
             BasicDBObject data = new BasicDBObject();
@@ -81,22 +85,22 @@ public class Database {
             data.put("contractList.$.cipher", Base64.toBase64String(contract.cipher));
             BasicDBObject command = new BasicDBObject();
             command.put("$set", data);
-            user.updateOne(Filters.and(eq("ip", myUser.ip), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
+            user.updateOne(Filters.and(eq("uid", myUser.uid), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
             data.replace("contractList.$.cipher", Base64.toBase64String(cipher));
             command.replace("$set", data);
-            user.updateOne(Filters.and(eq("ip", contract.receiverIP), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
+            user.updateOne(Filters.and(eq("uid", contract.receiverUid), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
         }
         System.out.println("database> insertUserContract: doc's _id : " + contractDoc.get("_id").toString());
         //만약 contractDOC이 step 1 이 아니라 2,3,4 라면 replace 해야함
     }
-    public ArrayList<Contract> getUserContractList(String ip) throws ParseException {
+    public ArrayList<Contract> getUserContractList(String uid) throws ParseException {
         ArrayList<Contract> contractList = new ArrayList<>();
         BasicDBObject filter = new BasicDBObject();
         filter.put("_id",0);
 //        filter.put("ip",0);
 //        filter.put("userType",0); //filter는 모두 0 이던가 하나만 1이던가 해야함! 단, _id flag설정은 상관없음
         filter.put("contractList",1);
-        cursor = user.find(Filters.eq("ip",ip)).projection(filter).iterator();
+        cursor = user.find(Filters.eq("uid",uid)).projection(filter).iterator();
         Document d = cursor.next();
         ArrayList<Document> list = (ArrayList<Document>) d.get("contractList");
         if(list != null){
@@ -161,17 +165,32 @@ public class Database {
         return myUser;
     }
 
-    public String getReceiperECIESpk(String receiperIP){
-        cursor = user.find(Filters.eq("ip",receiperIP)).iterator();
+    public String getReceiperECIESpk(String receiperUid){
+        System.out.println(receiperUid);
+        cursor = user.find(Filters.eq("uid",receiperUid)).iterator();
         if(cursor.hasNext()){
             String temp = cursor.next().get("ECIESpk").toString();
-            System.out.println("receiperIp, ECEISpk : " + receiperIP + "," + temp);
+            System.out.println("receiperuid, ECEISpk : " + receiperUid + "," + temp);
             return temp;
             //return cursor.next().get("ECIESpk").toString();
         }
         else
-            System.out.println("receiperIp에 해당하는 ECEISpk 없음");
+            System.out.println("receiperuid에 해당하는 ECEISpk 없음");
         return null;
+    }
+
+    public String sha256(String str){
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            digest.reset();
+            digest.update(str.getBytes("utf8"));
+            return String.format("%064x", new BigInteger(1, digest.digest()));
+
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return "error";
+        }
     }
 
 }

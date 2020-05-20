@@ -29,6 +29,7 @@ public class User {
     private int rRange = 60;
     private int pkSize = 5;
     public BigInteger qid; //.pem파일에서 읽어왕!
+    public String uid;
     public BigInteger id; //qid(100bit)생성시 고정값 80bit
     public BigInteger r; //data만들 때마다 랜덤으로 생성
     public Vector<AGCDPublicKey> pkSet = new Vector<>();
@@ -38,8 +39,9 @@ public class User {
     public  User(){
 
     }
-    public User(String ip, int type, ArrayList<String> idList) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
+    public User(String ip, String uid, int type, ArrayList<String> idList) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
         this.ip = ip;
+        this.uid = uid;
         this.userType = type == 0 ? USERTYPE.EMPLOYER : USERTYPE.WORKER;
         setECDSAKeySet();
         setECIESKeySet();
@@ -49,6 +51,7 @@ public class User {
         this._id = d.get("_id");
         this.id = new BigInteger(d.get("id").toString(),16);
         this.ip = d.get("ip").toString();
+        this.uid = d.get("uid").toString();
         this.userType = d.getInteger("userType") == 0 ? USERTYPE.EMPLOYER : USERTYPE.WORKER;
 //        this.eciesPublicKey = d.get("ECIESpk").toString().getBytes();
         setECDSAKeySet();
@@ -145,6 +148,20 @@ public class User {
                 if (i == 0) System.out.println("x0(hexadecimal) : " + this.pkSet.get(i).pk.toString(16));
                 else System.out.println(i + "(hexadecimal) : " + this.pkSet.get(i).pk.toString(16));
             }
+        }
+    }
+
+    public String sha256(String str){
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            digest.reset();
+            digest.update(str.getBytes("utf8"));
+            return String.format("%064x", new BigInteger(1, digest.digest()));
+
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return "error";
         }
     }
 

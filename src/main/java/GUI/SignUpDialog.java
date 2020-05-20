@@ -57,19 +57,24 @@ public class SignUpDialog extends JDialog{
     public JButton okButton = new JButton("OK");
     public JButton cancelButton = new JButton("CANCEL");
     public JRadioButton []userType = new JRadioButton[2];
+    public JLabel uidLabel = new JLabel("uid");
+    public JTextField uidTxt = new JTextField(10);
 
     public SignUpDialog(JFrame frame) {
         super(frame,"회원가입");
         this.setLayout(new FlowLayout());
-        this.setSize(200,130);
+        this.setSize(200,200);
 
         JPanel jp1 = new JPanel();
         JPanel jp2 = new JPanel();
+        JPanel jp3 = new JPanel();
 
         jp1.setLayout(new FlowLayout());
         jp2.setLayout(new FlowLayout());
+        jp3.setLayout(new FlowLayout());
 
-
+        jp1.add(uidLabel);
+        jp1.add(uidTxt);
         //ButtonGroup은 라디오 버튼 중 한가지만 선택하기 위해서
         ButtonGroup bg = new ButtonGroup();
 
@@ -77,9 +82,8 @@ public class SignUpDialog extends JDialog{
         userType[0].setSelected(true);
         userType[1] = new JRadioButton("근로자");
 
-
         for(JRadioButton i : userType) {
-            jp1.add(i);
+            jp2.add(i);
             bg.add(i);
         }
         cancelButton.addActionListener(new ActionListener(){
@@ -92,11 +96,14 @@ public class SignUpDialog extends JDialog{
 //	             user 데베에 추가
             }
         });
-        jp2.add(okButton);
-        jp2.add(cancelButton);
+
+        jp3.add(okButton);
+        jp3.add(cancelButton);
 
         this.add(jp1);
         this.add(jp2);
+        this.add(jp3);
+
 
     }
 }

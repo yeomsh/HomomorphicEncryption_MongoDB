@@ -11,7 +11,11 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
@@ -22,6 +26,7 @@ public class CSManager {
     public ArrayList<String> idList;
     protected final ArrayList<String> chainStr = FileManager.fileLineRead();
     protected String myIp = "";
+    protected String uid = "";
     protected KeyGenerator KG;
     public MainFrame frame;
     public HEManager he;
@@ -77,22 +82,38 @@ public class CSManager {
     public void initLogin() throws IOException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException {
         //로그인하면 -> 로그인
         //회원가입하면, 키 발급, 아이디 발급, (kgc공개키는 키워드 등록할 때 받기(?)), 데베 등록
-        myIp = mHandler.showInitDialog();
-        frame.addLog("사용자의 Ip : "+myIp);
+        InetAddress ip = InetAddress.getLocalHost();
+        myIp = ip.getHostAddress();
+        System.out.println("ip : " + myIp);
+        uid = mHandler.showInitDialog(myIp);
+        System.out.println("사용자의 uid : "+uid + "\n 사용자의 ip : " + myIp);
+        frame.addLog("사용자의 uid : "+uid + "\n 사용자의 ip : " + myIp);
         ipList = db.getIpList(myIp, new DataSource.Callback() {
             @Override
             public void onDataLoaded() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
                 user = db.getUser(myIp);
-                frame.addLog("등록된 사용자 로그인 : " + user.toString());
+                System.out.println(user.ip + ", " + user.uid + "," + db.sha256(uid));
+                if(db.sha256(uid).equals(user.uid)) {
+                    frame.addLog("등록된 사용자 로그인 : " + user.toString());
+                }
+                else{
+                    frame.addLog("잘못된 uid 입력");
+                    JOptionPane.showMessageDialog(null,"로그인 실패","Message",JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                    //다시 uid를 입력하도록 설정
+                }
             }
             @Override
             public void onDataFailed() {
+                //아이디 중복 확인 필요
                 idList = db.getIdList();
                 JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
                 mHandler.showSignUpDialog();
             }
         });
         he = new HEManager(user);
+        //iplist.size()의 값이 이상함 -> 로그인은 가능
+        //이상한 것이 아니라 이미 있는 user의 경우 continue를 해서 추가가 안 되는 것
         System.out.println("최종 유저 수: "+ ipList.size());
     }
     public Vector<JSONObject> searchKeyword(String keyword, User user) throws Exception {
@@ -104,7 +125,7 @@ public class CSManager {
         he.requestToUpload(user,contract);
     }
     public void loadContractData() throws ParseException {
-        user.setContractList(db.getUserContractList(user.ip));
+        user.setContractList(db.getUserContractList(user.uid));
     }
     public void uploadUser() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
         db.insertUser(user);

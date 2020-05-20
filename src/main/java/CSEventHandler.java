@@ -35,7 +35,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
         this.manager = manager;
     }
     public void showIpDialog() throws Exception {
-        String name = JOptionPane.showInputDialog("계약할 사람의 ip를 입력하세요.");
+        String name = JOptionPane.showInputDialog("계약할 사람의 uid를 입력하세요.");
 //		ipDialog.okButton.addActionListener(this);
 //		ipDialog.setVisible(true);
         if(name==null)
@@ -50,13 +50,14 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
     public String showKeywordDialog() {
         return JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
     }
-    public String showInitDialog() throws UnknownHostException {
-        InetAddress ip = InetAddress.getLocalHost();
-        String myIp = ip.getHostAddress();
+    public String showInitDialog(String myIp) throws UnknownHostException {
+//        InetAddress ip = InetAddress.getLocalHost();
+//        String myIp = ip.getHostAddress();
         //myIp = "127.0.0.1";
-        int select = JOptionPane.showConfirmDialog(null,"my Ip : "+myIp,"로그인",JOptionPane.OK_CANCEL_OPTION);
-        System.out.println(select);
-        if(select==2) {
+//        int select = JOptionPane.showConfirmDialog(null,"my Ip : "+myIp,"로그인",JOptionPane.OK_CANCEL_OPTION);
+        String uid = JOptionPane.showInputDialog("myIP : " + myIp + "\n아이디(uid) : ");
+        System.out.println(uid);
+        if(uid == null) {
             JOptionPane.showMessageDialog(null, "프로그램을 종료합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
             System.exit(0);
         }
@@ -69,7 +70,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
 //		initDialog.okButton.addActionListener(this);
 //		initDialog.setVisible(true);
         //ip tf채워넣기
-        return myIp;
+        return uid;
     }
 
     @Override
@@ -163,11 +164,13 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
 
         else if(source == frame.signUpDialog.okButton) {
             System.out.println("signUpDialog");
+            String uid = frame.signUpDialog.uidTxt.getText();
             int userType = 0;
             if(frame.signUpDialog.userType[1].isSelected())
                 userType = 1;
             try {
-                manager.user = new User(manager.myIp,userType, manager.idList);
+                System.out.println(uid + "myIp : " + manager.myIp);
+                manager.user = new User(manager.myIp,uid, userType, manager.idList);
                 manager.uploadUser();
             } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
                 noSuchAlgorithmException.printStackTrace();

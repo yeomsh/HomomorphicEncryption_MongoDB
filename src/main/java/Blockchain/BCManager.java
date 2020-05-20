@@ -38,10 +38,10 @@ public class BCManager {
     public DataSource.Callback callback = null;
     public ECIESManager eciesManager = new ECIESManager();
 
-    public BCManager(Database db, String receiverIP) throws Exception {
+    public BCManager(Database db, String receiverUID) throws Exception {
         this.db = db;
         this.user = db.myUser;
-        this.contract = new Contract(0, receiverIP);
+        this.contract = new Contract(0, receiverUID);
         this.contractGUI = new ContractGUI(this);
     }
 
@@ -70,12 +70,13 @@ public class BCManager {
     }
 
     public void saveContractWithCipher(JSONObject data) {
+        System.out.println(user.uid + "~~" + contract.receiverUid);
+
         contract.step++;
         contract.IV= eciesManager.makeIV();
-        System.out.println(user);
-        String PkString = db.getReceiperECIESpk(user.ip);
+        String PkString = db.getReceiperECIESpk(user.uid);
         contract.cipher = eciesManager.senderEncrypt(PkString,data.toJSONString(),contract.IV);
-        PkString = db.getReceiperECIESpk(contract.receiverIP);
+        PkString = db.getReceiperECIESpk(contract.receiverUid);
         db.insertStepContract(contract,eciesManager.senderEncrypt(PkString,data.toJSONString(),contract.IV));
     }
 

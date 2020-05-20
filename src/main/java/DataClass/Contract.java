@@ -6,19 +6,23 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class Contract {
     public int step; //1,2,3, 4
-    public String receiverIP; //상대방 IP
+    public String receiverUid; //상대방 IP
     public Object _id; //step1단계에서 최초로 mongodb에 업로드 될 떄 부여되는 유니크한 식별자
     public JSONObject fileData;
     public byte[] IV;
     public byte[] cipher;
 
-    public Contract(int step, String receiverIP){
+    public Contract(int step, String receiverUid){
         this.step = step;
-        this.receiverIP = receiverIP;
+        this.receiverUid = sha256(receiverUid);
     }
 
     public Contract(Object d){
@@ -29,10 +33,10 @@ public class Contract {
         if(fileData.containsKey("_id")) {
             this._id = fileData.get("_id");
             this.step = Integer.parseInt(fileData.get("step").toString());
-            this.receiverIP = fileData.get("receiverIP").toString();
+            this.receiverUid = fileData.get("receiverUid").toString();
             fileData.remove("_id");
             fileData.remove("step");
-            fileData.remove("receiverIP");
+            fileData.remove("receiverUid");
         }
     }
 
@@ -44,7 +48,7 @@ public class Contract {
         if(d.containsKey("_id")){
             this._id = d.get("_id");
             this.step = Integer.parseInt(d.get("step").toString());
-            this.receiverIP = d.getString("receiverIP");
+            this.receiverUid = d.getString("receiverUid");
             //obj = parser.parse(((Document) d.get("file")).toJson());
 //            this.IV = Base64.decode(d.get("IV").toString());
 //            this.cipher = Base64.decode(d.get("cipher").toString());
@@ -69,4 +73,17 @@ public class Contract {
 //        return IV;
 //    }
 
+    public String sha256(String str){
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            digest.reset();
+            digest.update(str.getBytes("utf8"));
+            return String.format("%064x", new BigInteger(1, digest.digest()));
+
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return "error";
+        }
+    }
 }
