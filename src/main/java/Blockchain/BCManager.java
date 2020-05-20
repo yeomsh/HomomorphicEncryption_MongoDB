@@ -1,13 +1,10 @@
 package Blockchain;
 
-import DataClass.Contract;
-import DataClass.DataSource;
-import DataClass.Database;
-import DataClass.User;
+import DataClass.*;
+import ECIES.ECIES;
 import GUI.ContractGUI;
-import ecies.ECIESManager;
+import ECIES.ECIESManager;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import util.KeyGenerator;
 import util.StringUtil;
 
@@ -36,7 +33,7 @@ public class BCManager {
     public User user;
     public KeyGenerator KG = new KeyGenerator();
     public DataSource.Callback callback = null;
-    public ECIESManager eciesManager = new ECIESManager();
+    public ECIESManager eciesManager = new ECIESManager(); //static으로 만들면 이상할란가 . . .!?!?
 
     public BCManager(Database db, String receiverUID) throws Exception {
         this.db = db;
@@ -51,8 +48,19 @@ public class BCManager {
         this.user = user;
         this.ipList = ipList;
         this.contract = contract;
-        this.contract.fileData = decryptCipherToFileData();
+        this.contract.fileData = eciesManager.decryptCipherContract(contract.cipher,user.eciesPrivateKey,contract.IV);
         this.contractGUI = new ContractGUI(this);
+        //사용자 모드 별 contractGUI 컨트롤 코드 -> 프로그램 검사하는데는 힘드니까 주석 처리 해둘꼐용  !
+//        if(user.userType == USERTYPE.EMPLOYER){
+//            if(contract.step == 1 || contract.step == 3){
+//                contractGUI.setVisiableAllFalse();
+//            }
+//        }
+//        else{
+//            if(contract.step == 2 || contract.step == 4){
+//                contractGUI.setVisiableAllFalse();
+//            }
+//        }
     }
 
     public BCManager(User user, Database db, ArrayList<String> ipList, Contract contract, DataSource.Callback callback) throws Exception {
@@ -60,18 +68,8 @@ public class BCManager {
         this.callback = callback;
         //점주 /근로자 마다 할 수 있는 step이 다른데 그것도 체크해야함
     }
-
-    //cipher를 contractfiledata로 복호화
-    public JSONObject decryptCipherToFileData() throws Exception {
-        byte[] plainText = eciesManager.recipientDecrypt(contract.cipher,user.eciesPrivateKey,contract.IV);
-        String contractString = new String(plainText);
-        JSONParser parser = new JSONParser();
-        return (JSONObject) parser.parse(contractString);
-    }
-
     public void saveContractWithCipher(JSONObject data) {
         System.out.println(user.uid + "~~" + contract.receiverUid);
-
         contract.step++;
         contract.IV= eciesManager.makeIV();
         String PkString = db.getReceiperECIESpk(user.uid);
@@ -187,8 +185,12 @@ public class BCManager {
                 chainUpdate();
                 proofOfWork(((JSONObject) data.get("wHashSignature")).get("plain").toString());
                 if(broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
-                    db.removeStepContract(contract); //임시서버에서 지우기
+                    db.removeStepContract(contract._id,user.uid);
                     //키워드 업로드 -> 파일 업로드 -> zindex 업데이트
+                    contract.IV = eciesManager.makeIV();
+                    String PkString = db.getReceiperECIESpk(user.uid);
+                    contract.cipher = eciesManager.senderEncrypt(PkString,data.toJSONString(),contract.IV);
+                    db.insertStep5contract(contract); //노동자의 임시 서버에 step5로 업데이트
                     callback.onDataLoaded();
                 }
                 else { //실패하면 그냥 끝
@@ -234,33 +236,40 @@ public class BCManager {
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            JSONObject data = contractGUI.getStepContract();
-            System.out.println("contract btnsubmin 클릭됨, step: " + contract.step);
-            try {
-                switch (contract.step){
-                    case 4:
-                        step4();
-                        break;
-                    case 3:
-                        step3();
-                        break;
-                    case 2:
-                        step2(data);
-                        break;
-                    case 1:
-                    case 0:
-                        saveContractWithCipher(data);
-                        break;
-                    default:
-                        System.out.println("BCManager: undefined step: "+contract.step);
-                        break;
+            if(e.getSource() == contractGUI.btnAbort){
+                db.removeStepContract(contract._id,user.uid);
+                db.removeStepContract(contract._id,contract.receiverUid);
+                contractGUI.btnCancel.doClick();
+            }
+            else if(e.getSource() == contractGUI.btnSubmit) {
+                JSONObject data = contractGUI.getStepContract();
+                System.out.println("contract btnsubmin 클릭됨, step: " + contract.step);
+                try {
+                    switch (contract.step) {
+                        case 4:
+                            step4();
+                            break;
+                        case 3:
+                            step3();
+                            break;
+                        case 2:
+                            step2(data);
+                            break;
+                        case 1:
+                        case 0:
+                            saveContractWithCipher(data);
+                            break;
+                        default:
+                            System.out.println("BCManager: undefined step: " + contract.step);
+                            break;
+                    }
+                    contractGUI.setVisible(false); //모든 작업끝나면 계약서 작성창 닫기
+                    System.out.println("제출");
+                } catch (InvalidKeySpecException | NoSuchAlgorithmException | SignatureException | IOException | InvalidAlgorithmParameterException | NoSuchProviderException invalidKeySpecException) {
+                    invalidKeySpecException.printStackTrace();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
-                contractGUI.setVisible(false); //모든 작업끝나면 계약서 작성창 닫기
-                System.out.println("제출");
-            } catch (InvalidKeySpecException | NoSuchAlgorithmException | SignatureException | IOException | InvalidAlgorithmParameterException | NoSuchProviderException invalidKeySpecException) {
-                invalidKeySpecException.printStackTrace();
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
 
         }

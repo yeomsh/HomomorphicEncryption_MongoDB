@@ -4,16 +4,13 @@ import DataClass.Contract;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
-import ecies.ECIESManager;
+import ECIES.ECIESManager;
 import org.bson.Document;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -190,6 +187,7 @@ public class HEServer {
         Document d = cursor.next();
         ArrayList<Document> list = (ArrayList<Document>) d.get("fileList");
         HashMap<Object,Boolean> zIndexResult = new HashMap<>();
+        ECIESManager eciesManager = new ECIESManager();
         for (Document doc: list){
             System.out.println("doc:\n"+doc);
             if(doc.getBoolean("exist")){
@@ -204,19 +202,12 @@ public class HEServer {
                 CipherContract cipherContract = new CipherContract(doc);
                 //c2 c3비교
                 if (keywordTest(cipherData, cipherContract)) { //파일에 속한 권한 비교
-                    keywordFile.add(decryptCipherToFileData(cipherContract));
+                    keywordFile.add(eciesManager.decryptCipherContract(cipherContract.cipher, nosqldb.myUser.eciesPrivateKey,cipherContract.IV));
                 }
             }
 
         }
         System.out.println("this is the correctFile : " + keywordFile.size());
         return keywordFile;
-    }
-    public JSONObject decryptCipherToFileData(Contract contract) throws Exception {
-        ECIESManager eciesManager = new ECIESManager();
-        byte[] plainText = eciesManager.recipientDecrypt(contract.cipher, nosqldb.myUser.eciesPrivateKey,contract.IV);
-        String contractString = new String(plainText);
-        JSONParser parser = new JSONParser();
-        return (JSONObject) parser.parse(contractString);
     }
 }

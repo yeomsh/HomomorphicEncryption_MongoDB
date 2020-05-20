@@ -3,6 +3,8 @@ package DataClass;
 import HomomorphicEncryption.AGCDPublicKey;
 import org.bson.Document;
 import util.KeyGenerator;
+import util.StringUtil;
+
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -11,9 +13,6 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
 
-enum USERTYPE{
-    EMPLOYER, WORKER
-}
 public class User {
     public Object _id; //get by mongoDB
     public String ip;
@@ -41,7 +40,7 @@ public class User {
     }
     public User(String ip, String uid, int type, ArrayList<String> idList) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
         this.ip = ip;
-        this.uid = uid;
+        this.uid = StringUtil.getSha256(uid);
         this.userType = type == 0 ? USERTYPE.EMPLOYER : USERTYPE.WORKER;
         setECDSAKeySet();
         setECIESKeySet();
@@ -148,20 +147,6 @@ public class User {
                 if (i == 0) System.out.println("x0(hexadecimal) : " + this.pkSet.get(i).pk.toString(16));
                 else System.out.println(i + "(hexadecimal) : " + this.pkSet.get(i).pk.toString(16));
             }
-        }
-    }
-
-    public String sha256(String str){
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            digest.reset();
-            digest.update(str.getBytes("utf8"));
-            return String.format("%064x", new BigInteger(1, digest.digest()));
-
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return "error";
         }
     }
 

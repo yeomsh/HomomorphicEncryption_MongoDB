@@ -1,4 +1,4 @@
-package ecies;
+package ECIES;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -6,14 +6,11 @@ package ecies;
  * and open the template in the editor.
  */
 
-import DataClass.User;
 import org.bouncycastle.util.encoders.Base64;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 
 /**
  *
@@ -62,14 +59,14 @@ public class ECIESManager extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     //랜덤한 IV생성
-    public byte[] makeIV(){
+    public static byte[] makeIV(){
         byte[] IV = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(IV);
         return IV;
     }
 
-    public byte[] recipientDecrypt(byte[] cipher, byte[] recipientPrivateKey, byte[] IV) throws Exception {
+    public JSONObject decryptCipherContract(byte[] cipher, byte[] recipientPrivateKey, byte[] IV) throws Exception {
         byte[] cipherText = cipher;
         byte[] receiverR = new byte[ecies.getKeySize()];
         System.arraycopy(cipherText, 0, receiverR, 0, ecies.getKeySize());
@@ -82,13 +79,15 @@ public class ECIESManager extends javax.swing.JFrame {
 
         byte[] decryptionPoint = ellipticCurve.decryptionPoint(receiverR, recipientPrivateKey);
         byte[] plainText = ecies.decrypt(decryptionPoint, IV, receiverChiperText, receiverTag);
-        return plainText;
+        String contractString = new String(plainText);
+        JSONParser parser = new JSONParser();
+        return (JSONObject) parser.parse(contractString);
     }
+
 
     //암호문 encrypt : 받는 사람의 공개키를 이용해서
     public byte[] senderEncrypt(String publicKey, String plainText, byte[] IV) {
         byte[] recipientPublicKey = Base64.decode(publicKey);
-
         byte[] r = ecies.getRandomNumber(ecies.getKeySize());
         byte[] R = ellipticCurve.generateR(r);
         byte[] encryptionPoint = ellipticCurve.encryptionPoint(r, recipientPublicKey);

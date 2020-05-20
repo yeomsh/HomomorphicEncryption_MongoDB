@@ -9,6 +9,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
+import util.StringUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,7 +39,7 @@ public class Database {
         return new Document("id",user.id.toString(16))
                 .append("userType",user.userType.ordinal())
                 .append("ip",user.ip)
-                .append("uid",sha256(user.uid))
+                .append("uid", user.uid)
                 .append("ECIESpk", Base64.toBase64String(user.eciesPublicKey));
     }
     public Document ContractDoc(Contract contract){
@@ -49,22 +50,36 @@ public class Database {
                 .append("IV",Base64.toBase64String(contract.IV))
                 .append("cipher",Base64.toBase64String(contract.cipher));
     }
-
-    public void removeStepContract(Contract contract){
+    public Boolean isValidUser(String uid){
+        cursor = user.find(Filters.eq("uid",StringUtil.getSha256(uid))).iterator();
+        if(cursor.hasNext()) return true;
+        return false;
+    }
+    public void removeStepContract(Object _id, String uid){
         //$(index) 위치의 element 지우기(using unset)->null로 바뀜
         BasicDBObject data = new BasicDBObject();
         data.put("contractList.$",1);
         BasicDBObject command = new BasicDBObject();
         command.put("$unset", data);
-        user.updateOne(Filters.and(eq("uid", sha256(myUser.uid)), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
-        user.updateOne(Filters.and(eq("uid", contract.receiverUid), elemMatch("contractList", eq(contract._id))), command);
+        user.updateOne(Filters.and(eq("uid", uid), elemMatch("contractList", eq(_id))), command); //내꺼 업로드
+        //user.updateOne(Filters.and(eq("uid", contract.receiverUid), elemMatch("contractList", eq(contract._id))), command);
         //array에 있는 null 모두 삭제(using pull)
         data.remove("contractList.$");
         data.put("contractList", null);
         command.remove("$unset");
         command.put("$pull", data);
-        user.updateOne(Filters.eq("uid", sha256(myUser.uid)), command);
-        user.updateOne(Filters.eq("uid", contract.receiverUid), command);
+        user.updateOne(Filters.eq("uid", uid), command);
+        // user.updateOne(Filters.eq("uid", contract.receiverUid), command);
+    }
+    public void insertStep5contract(Contract contract){
+        BasicDBObject data = new BasicDBObject();
+        data.put("contractList.$.step", 5);
+        data.put("contractList.$.IV", Base64.toBase64String(contract.IV));
+        data.put("contractList.$.cipher", Base64.toBase64String(contract.cipher));
+        BasicDBObject command = new BasicDBObject();
+        command.put("$set", data);
+        user.updateOne(Filters.and(eq("uid", contract.receiverUid), elemMatch("contractList", eq(contract._id))), command); //내꺼 업로드
+
     }
     public void insertStepContract(Contract contract, byte[] cipher) {
         //문제의 user의 contractlist 업데이트 함수
@@ -132,7 +147,7 @@ public class Database {
         }
         return idList;
     }
-    public ArrayList<String> getIpList(String myIp, DataSource.Callback callback) throws InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    public ArrayList<String> getIpList(String myIp, DataSource.Callback callback) throws Exception {
         ArrayList<String> ipList = new ArrayList<>();
         BasicDBObject filter = new BasicDBObject();
         filter.put("ip", 1);
@@ -177,20 +192,6 @@ public class Database {
         else
             System.out.println("receiperuid에 해당하는 ECEISpk 없음");
         return null;
-    }
-
-    public String sha256(String str){
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            digest.reset();
-            digest.update(str.getBytes("utf8"));
-            return String.format("%064x", new BigInteger(1, digest.digest()));
-
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return "error";
-        }
     }
 
 }

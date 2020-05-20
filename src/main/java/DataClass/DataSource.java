@@ -8,7 +8,7 @@ import java.security.spec.InvalidKeySpecException;
 
 public interface DataSource {
     interface Callback {
-        void onDataLoaded() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException;
+        void onDataLoaded() throws Exception;
         void onDataFailed();
     }
 }

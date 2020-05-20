@@ -34,7 +34,7 @@ public class CSManager {
     public CSEventHandler mHandler;
     public Database db;
     protected Server server;
-    public CSManager() throws IOException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    public CSManager() throws Exception {
         //CSManager를 실행시키기위해서 필요한 setup들
         KG = new KeyGenerator();
         initKGCAndServer();
@@ -77,13 +77,15 @@ public class CSManager {
         //블록체인 서버 OPEN
         server = new Server(3000,chainStr);
     }
-
+//8c08c74b3ade39532c5e347a8bb94291b558086d3b24e332fe1a1fa92469edbb
+//e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     //제일 처음 로그인 및 회원가입 과정을 수행하는 함수
-    public void initLogin() throws IOException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException {
+    public void initLogin() throws Exception {
         //로그인하면 -> 로그인
         //회원가입하면, 키 발급, 아이디 발급, (kgc공개키는 키워드 등록할 때 받기(?)), 데베 등록
         InetAddress ip = InetAddress.getLocalHost();
         myIp = ip.getHostAddress();
+        //myIp = "127.0.0.1";
         System.out.println("ip : " + myIp);
         uid = mHandler.showInitDialog(myIp);
         System.out.println("사용자의 uid : "+uid + "\n 사용자의 ip : " + myIp);
@@ -92,8 +94,8 @@ public class CSManager {
             @Override
             public void onDataLoaded() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
                 user = db.getUser(myIp);
-                System.out.println(user.ip + ", " + user.uid + "," + db.sha256(uid));
-                if(db.sha256(uid).equals(user.uid)) {
+                System.out.println(user.ip + ", " + user.uid + "," + StringUtil.getSha256(uid));
+                if(StringUtil.getSha256(uid).equals(user.uid)) {
                     frame.addLog("등록된 사용자 로그인 : " + user.toString());
                 }
                 else{
@@ -120,7 +122,7 @@ public class CSManager {
         he.setUserPKSet(user);
         return he.searchKeyword(user,keyword);
     }
-    public void uploadContract(DataClass.Contract contract){
+    public void uploadContract(DataClass.Contract contract) throws Exception {
         he.setUserPKSet(user);
         he.requestToUpload(user,contract);
     }
@@ -130,7 +132,7 @@ public class CSManager {
     public void uploadUser() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
         db.insertUser(user);
     }
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException {
+    public static void main(String[] args) throws Exception {
         CSManager t = new CSManager();
     }
 }

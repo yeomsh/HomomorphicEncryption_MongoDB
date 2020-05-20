@@ -1,8 +1,9 @@
 package HomomorphicEncryption;
 
+import DataClass.Contract;
 import DataClass.User;
+import ECIES.ECIESManager;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import util.StringUtil;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -91,13 +92,17 @@ public class HEManager {
     }
 
 
-    public void requestToUpload(User user, DataClass.Contract contract){
+    public void requestToUpload(User user, Contract contract) throws Exception {
         user.setAu(KGC.shareAlpha());
         long start = System.currentTimeMillis();
         //근로자 or 점주 둘 중한명만 파일등록함
         System.out.println("user.pkset " + user.pkSet);
         System.out.println("user.getAu() : " + user.getAu());
         System.out.println("kgc.pkset0 : " + KGC.pkSet.get(0));
+        if(contract.fileData == null){
+            ECIESManager eciesManager = new ECIESManager();
+            contract.fileData = eciesManager.decryptCipherContract(contract.cipher, user.eciesPrivateKey,contract.IV); //이걸 static으로 만들고싶음
+        }
         String[] keywordArr = new String[]{contract.fileData.get("oName").toString(), contract.fileData.get("wName").toString()};
 //        for (String str: keywordArr){
 //            user.ChangeUserR();

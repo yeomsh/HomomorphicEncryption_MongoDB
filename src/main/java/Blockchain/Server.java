@@ -22,9 +22,9 @@ public class Server extends Thread {
       portNum = port;
       chainStr = Chain;
       clientVector = new Vector<>();
-      start();
       try {
          server = new ServerSocket(port);
+         start();
       } catch (IOException ex) {
          System.out.println("Cannot execute Chat Server!");
          ex.printStackTrace();

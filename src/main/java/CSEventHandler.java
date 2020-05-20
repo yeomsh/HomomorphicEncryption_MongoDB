@@ -1,5 +1,7 @@
 import Blockchain.BCManager;
+import DataClass.Contract;
 import DataClass.DataSource;
+import DataClass.USERTYPE;
 import DataClass.User;
 import GUI.ContractGUI;
 import GUI.MainFrame;
@@ -36,13 +38,12 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
     }
     public void showIpDialog() throws Exception {
         String name = JOptionPane.showInputDialog("계약할 사람의 uid를 입력하세요.");
-//		ipDialog.okButton.addActionListener(this);
-//		ipDialog.setVisible(true);
         if(name==null)
             JOptionPane.showMessageDialog(null, "계약서 작성을 취소합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
-        else {
+        else if(!manager.db.isValidUser(name))
+            JOptionPane.showMessageDialog(null, "계약서 작성을 취소합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
+        else
             new BCManager(manager.db,name); //새로하기니까 무조건 1단계
-        }
     }
     public void showSignUpDialog() {
         frame.signUpDialog.setVisible(true);
@@ -50,7 +51,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
     public String showKeywordDialog() {
         return JOptionPane.showInputDialog("검색할 키워드를 입력하세요.");
     }
-    public String showInitDialog(String myIp) throws UnknownHostException {
+    public String showInitDialog(String myIp) {
 //        InetAddress ip = InetAddress.getLocalHost();
 //        String myIp = ip.getHostAddress();
         //myIp = "127.0.0.1";
@@ -79,7 +80,11 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
         if (source == frame.mpNew.button){
             System.out.println("mpNew");
             try {
-                showIpDialog();
+                if(manager.user.userType == USERTYPE.EMPLOYER)
+                    showIpDialog();
+                else {
+                    frame.addLog("계약서 생성하기는 고용주 모드에서만 가능합니다.\n");
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -94,8 +99,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                         new BCManager(manager.user, manager.db, manager.ipList, contract
                                 , new DataSource.Callback() {
                             @Override //HE 작업하기
-                            public void onDataLoaded(){
-
+                            public void onDataLoaded() throws Exception {
                                 manager.uploadContract(contract);
                             }
                             @Override //그냥 끝내기
@@ -155,7 +159,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                 JOptionPane.showMessageDialog(null, index + " : 계약서 선택", "Message", JOptionPane.INFORMATION_MESSAGE);
                 //계약서 보여주는 내용 추가
                 try {
-                    ContractGUI gui = new ContractGUI(keywordFile.get(index));
+                    new ContractGUI(keywordFile.get(index));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -237,17 +241,25 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
         // TODO Auto-generated method stub
 
     }
-    public void tabStateChanged() throws ParseException {
+    public void tabStateChanged() throws Exception {
         if (frame.jTab.getSelectedIndex() == 3) { // 선택한 탭이 "refresh" 라면 "기존"탭으로 유지하기
-            if (frame.idxTab == 2) {// 현재 탭이 "계약 이어하기"
-                //relaod data
+            Boolean isUpdate = true;
+            manager.loadContractData();
+            System.out.println("size: "+manager.user.contractList.size());
+            for (Contract contract: manager.user.contractList){
+                if(contract.step == 5){
+                    isUpdate = false;
+                    //keyword암호문 업로드
+                    manager.uploadContract(contract);
+                    //step5임시서버에서 지우기
+                    manager.db.removeStepContract(contract._id, manager.uid);
+                }
+            }
+            if(!isUpdate) //step5 파일 있었을 때만 다시 contractList 불러오기
                 manager.loadContractData();
-                //데이터 받아온거 뿌리기
-                frame.mpContinue.setComboBoxContract(manager.user.contractList);
-            }
-            else {
-                //다른 탭에서는 반응없음
-            }
+            frame.mpContinue.setComboBoxContract(manager.user.contractList);
+            System.out.println("size: "+manager.user.contractList.size());
+
         }
         else {
             frame.idxTab = frame.jTab.getSelectedIndex();
@@ -264,6 +276,8 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                 tabStateChanged();
             } catch (ParseException ex) {
                 ex.printStackTrace();
+            } catch (Exception exception) {
+                exception.printStackTrace();
             }
         }
     }

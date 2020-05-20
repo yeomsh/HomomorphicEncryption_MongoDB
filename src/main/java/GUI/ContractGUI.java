@@ -63,13 +63,14 @@ public class ContractGUI extends JFrame {
 
    Choice chJob;
    JTextField txtAddr, txtAge;
-   JButton btnSubmit, btnCancel;
+   public  JButton btnSubmit, btnCancel, btnAbort;
 
    public ContractGUI(BCManager manager) throws Exception { //BCManager 에서 호출됨
       this();
       contract = manager.contract;
       setPanel();
       btnSubmit.addActionListener(manager.eventHandler);
+      btnAbort.addActionListener(manager.eventHandler);
    }
 
    public ContractGUI(JSONObject contract) throws Exception { //BCManager 에서 호출됨
@@ -134,6 +135,7 @@ public class ContractGUI extends JFrame {
       setContractField(data);
       setVisiableAllFalse();
       btnSubmit.setText("확인");
+      btnAbort.setEnabled(false);
       btnCancel.setText("닫기");
       setVisible(true);
       btnSubmit.addActionListener(new ActionListener() {
@@ -169,7 +171,8 @@ public class ContractGUI extends JFrame {
       oSign2Txt.setEnabled(true);
       oSign3Txt.setEnabled(true);
       oSign4Txt.setEnabled(true);
-
+      btnSubmit.setEnabled(true);
+      btnAbort.setEnabled(true);
       setVisible(true);
    }
 
@@ -200,6 +203,8 @@ public class ContractGUI extends JFrame {
       wSign1Txt.setEnabled(false);
       wSign2Txt.setEnabled(false);
       wSign3Txt.setEnabled(false);
+      btnSubmit.setEnabled(false);
+      btnAbort.setEnabled(false);
    }
    // step1 점주가 근로계약서 작성
    public void setStep2Contract(JSONObject json) {
@@ -209,7 +214,8 @@ public class ContractGUI extends JFrame {
       wSign1Txt.setEnabled(true);
       wSign2Txt.setEnabled(true);
       wSign3Txt.setEnabled(true);
-
+      btnSubmit.setEnabled(true);
+      btnAbort.setEnabled(true);
       setVisible(true);
    }
 
@@ -219,7 +225,8 @@ public class ContractGUI extends JFrame {
 
       setVisiableAllFalse();
       btnSubmit.setText("서명하기");
-
+      btnSubmit.setEnabled(true);
+      btnAbort.setEnabled(true);
       setVisible(true);
    }
 
@@ -230,12 +237,16 @@ public class ContractGUI extends JFrame {
       setContractField(json);
       setVisiableAllFalse();
       btnSubmit.setText("서명하기");
+      btnSubmit.setEnabled(true);
+      btnAbort.setEnabled(true);
       setVisible(true);
    }
    public void setStep5Contract(JSONObject json) { //점주가 근로자의 서명이 붙은 파일을 최종적으로 검증하는 창
       setContractField(json);
       setVisiableAllFalse();
       btnSubmit.setText("블록체인");
+      btnSubmit.setEnabled(true);
+      btnAbort.setEnabled(true);
       setVisible(true);
    }
    // null인지 check하는 함수 추가하기
@@ -651,8 +662,10 @@ public class ContractGUI extends JFrame {
 
       btnCancel = new JButton("취소");
       btnSubmit = new JButton("작성완료");
+      btnAbort = new JButton("폐기");
       btnCancel.setSize(150, 40);
       btnSubmit.setSize(150, 40);
+      btnAbort.setSize(150,40);
 
       oNameTxt.setBounds(120, 20, 180, 20);
       wNameTxt.setBounds(120, 50, 180, 20);
@@ -692,6 +705,7 @@ public class ContractGUI extends JFrame {
       JPanel paButton = new JPanel();
       paButton.add(btnSubmit);
       paButton.add(btnCancel);
+      paButton.add(btnAbort);
       paButton.setBounds(50, 990, 370, 370);
 
       panel.add(lblhipen3);
