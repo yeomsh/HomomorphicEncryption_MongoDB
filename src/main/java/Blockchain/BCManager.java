@@ -21,7 +21,7 @@ import java.util.Vector;
 public class BCManager {
     //블록체인 관련
     protected Vector<Client> cList;
-    protected static JSONObject block;
+    public static JSONObject block;
     public static ArrayList<String> chainStr;
     ArrayList<String> ipList;
     static int countPOW = 0;
@@ -34,7 +34,9 @@ public class BCManager {
     public KeyGenerator KG = new KeyGenerator();
     public DataSource.Callback callback = null;
     public ECIESManager eciesManager = new ECIESManager(); //static으로 만들면 이상할란가 . . .!?!?
-
+    public BCManager(ArrayList<String> ipList){
+        this.ipList = ipList;
+    }
     public BCManager(Database db, String receiverUID) throws Exception {
         this.db = db;
         this.user = db.myUser;
@@ -125,7 +127,7 @@ public class BCManager {
         return result;
     }
         // object대신에 근로자에게 서명을 붙여서 보낸 파일을 해시한 내용 = nowHash
-    protected void proofOfWork(String hashData){
+    public void proofOfWork(String hashData){
         String latestHash = "";
         synchronized (chainStr) {
             // 체인 업데이트 (두 명 이상의 피어가 동시에 브로드캐스팅을 시도했을 경우는 생각해봐야함 ,,,일단 한명이 브로드캐스팅했을때 업데이트 기준)

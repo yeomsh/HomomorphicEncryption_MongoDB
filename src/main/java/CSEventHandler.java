@@ -62,15 +62,6 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
             JOptionPane.showMessageDialog(null, "프로그램을 종료합니다.", "Message", JOptionPane.INFORMATION_MESSAGE);
             System.exit(0);
         }
-        //ip확인후 없으면 else내용 진행
-//		else
-//			JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
-//		//if(name.equals("true"))
-//			showSignUpDialog();
-
-//		initDialog.okButton.addActionListener(this);
-//		initDialog.setVisible(true);
-        //ip tf채워넣기
         return uid;
     }
 

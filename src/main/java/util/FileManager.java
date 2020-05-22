@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class FileManager {
    static String src = ".\\chain.txt";
-   public static ArrayList<String> fileLineRead() throws IOException {
+   public static ArrayList<String> readChainFile() throws IOException {
       ArrayList<String> retStr = new ArrayList<>();
       BufferedReader in = null;
       try {

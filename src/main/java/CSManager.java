@@ -1,3 +1,4 @@
+import Blockchain.BCManager;
 import Blockchain.Server;
 import DataClass.DataSource;
 import DataClass.Database;
@@ -11,20 +12,24 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class CSManager {
+    /*
+    * 2020-05-23 추가해야할 내용:
+    * 1) swing 끄면서 블록체인 서버 close하고 open했던거 다 꺼야함 !!
+    *
+    * */
     protected ArrayList<String> ipList;
     public ArrayList<String> idList;
-    protected final ArrayList<String> chainStr = FileManager.fileLineRead();
+    protected final ArrayList<String> chainStr = FileManager.readChainFile();
     protected String myIp = "";
     protected String uid = "";
     protected KeyGenerator KG;
@@ -36,7 +41,7 @@ public class CSManager {
     protected Server server;
     public CSManager() throws Exception {
         //CSManager를 실행시키기위해서 필요한 setup들
-        KG = new KeyGenerator();
+
         initKGCAndServer();
         initFrame();
         StartLog();
@@ -71,9 +76,9 @@ public class CSManager {
     //KGC 및 서버 생성 (kgc는 나중에 데베에서 받아오는 형식으로,,,?)
     public void initKGCAndServer() { //근데 he서버는 he동작을 할 떄 init을 하는게 낫지 않우까!?!?!?!? -승연
         //db 변수 init
+        KG = new KeyGenerator();
         db= new Database();
         //server에서 noSQLDB생성 -> 근데 he와 연관없는 db작업이 필요해서 db변수를 만들었어 ! - 승연
-
         //블록체인 서버 OPEN
         server = new Server(3000,chainStr);
     }
@@ -134,6 +139,42 @@ public class CSManager {
     }
     public static void main(String[] args) throws Exception {
         CSManager t = new CSManager();
+        //Genesis server 호출 코드
+//        Server server = new Server(3000,FileManager.readChainFile()); //필수는 아니고 확인해보려고 넣은거얌
+//        BCManager.chainStr = FileManager.readChainFile(); //필수
+//        BCManager.block = new JSONObject(); //필수
+//        GenesisServer gs = new GenesisServer();
+//        gs.close(); //서버 꺼질 때 호출하면됨 -> 사실상 호출안된다고 보면 됨
     }
 }
+
+class GenesisServer extends TimerTask  {
+    //교수님 컴퓨터에서 돌릴 것임
+    //여기서 생성되는 체인도 교수님 컴퓨터(서버)에 저장될 것임
+    Timer jobScheduler = new Timer();
+    public GenesisServer() {
+        System.out.println("init GenesisServer");
+        jobScheduler.scheduleAtFixedRate(this, 0, 30000); //호출로부터 0초후에 30s간격으로 task 함수(run함수) 호출 -> 실제로는 10분으로 바꾸면 됨
+    }
+    public void run() {
+        System.out.println("GenesisServer: run");
+        ArrayList<String> ipList = new ArrayList<>();
+        ipList.add("192.168.56.1"); //확인을 위해 내 아이피하나 넣어뒀어 ! 상히가 확인해보고 싶으면 상히 ip넣어두면도ㅐ
+
+        BCManager bcManager = new BCManager(ipList);
+        bcManager.chainUpdate();
+        bcManager.proofOfWork(StringUtil.randomString());
+        if(bcManager.broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
+            System.out.println("브로드 캐스트에서 작업증명결과가 옳다고 나옴-> 성공");
+        }
+        else { //실패하면 그냥 끝
+            System.out.println("브로드 캐스트에서 작업증명결과가 옳지않다고 나옴 -> 실패");
+        }
+    }
+    public void close(){
+        jobScheduler.cancel();
+    }
+
+}
+
 
