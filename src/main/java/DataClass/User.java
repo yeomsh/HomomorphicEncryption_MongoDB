@@ -61,9 +61,13 @@ public class User {
         File keyFile = new File("ECDSAprivate.pem");
         if (!keyFile.exists()) {
             KG.makeECDSAKey();
+            this.sigPrivateKey = KG.readECDSAPrivateKeyFromPemFile("ECDSAprivate.pem");
+            this.sigPublicKey = KG.readECDSAPublicKeyFromPemFile("ECDSApublic.pem");
         }
-        this.sigPrivateKey = KG.readECDSAPrivateKeyFromPemFile("ECDSAprivate.pem");
-        this.sigPublicKey = KG.readECDSAPublicKeyFromPemFile("ECDSApublic.pem");
+        else {
+            this.sigPrivateKey = KG.readECDSAPrivateKeyFromPemFile("ECDSAprivate.pem");
+            this.sigPublicKey = KG.readECDSAPublicKeyFromPemFile("ECDSApublic.pem");
+        }
     }
 
     //public 없애기
@@ -71,9 +75,14 @@ public class User {
         File keyFile = new File("ECIESprivate.pem");
         if (!keyFile.exists()) {
             KG.makeECIESKey();
+            this.eciesPrivateKey = KG.readECIESPrivateKeyFromPemFile("ECIESprivate.pem");
+            this.eciesPublicKey = KG.readECIESPublicKeyFromPemFile("ECIESpublic.pem");
         }
-        this.eciesPrivateKey = KG.readECIESPrivateKeyFromPemFile("ECIESprivate.pem");
-        this.eciesPublicKey = KG.readECIESPublicKeyFromPemFile("ECIESpublic.pem");
+        else{
+            this.eciesPrivateKey = KG.readECIESPrivateKeyFromPemFile("ECIESprivate.pem");
+            this.eciesPublicKey = KG.readECIESPublicKeyFromPemFile("ECIESpublic.pem");
+        }
+
     }
 
     public String toString(){

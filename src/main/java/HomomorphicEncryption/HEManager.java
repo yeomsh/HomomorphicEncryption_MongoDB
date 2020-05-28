@@ -99,11 +99,14 @@ public class HEManager {
         System.out.println("user.pkset " + user.pkSet);
         System.out.println("user.getAu() : " + user.getAu());
         System.out.println("kgc.pkset0 : " + KGC.pkSet.get(0));
+        System.out.println("contract.fileData : "+ contract.fileData);
         if(contract.fileData == null){
             ECIESManager eciesManager = new ECIESManager();
             contract.fileData = eciesManager.decryptCipherContract(contract.cipher, user.eciesPrivateKey,contract.IV); //이걸 static으로 만들고싶음
         }
         String[] keywordArr = new String[]{contract.fileData.get("oName").toString(), contract.fileData.get("wName").toString()};
+        System.out.println("oName: "+contract.fileData.get("oName").toString());
+        System.out.println("wName: "+contract.fileData.get("wName").toString());
 //        for (String str: keywordArr){
 //            user.ChangeUserR();
 //            Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(SHA1(str),16),user.getAu(), KGC.pkSet),contract.fileData);

@@ -5,11 +5,13 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import ECIES.ECIESManager;
+import org.bouncycastle.util.encoders.Base64;
 import org.bson.Document;
 import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -199,9 +201,13 @@ public class HEServer {
         for(Object _id: zIndexResult.keySet()){
             Document doc = nosqldb.filePEKS.find(Filters.eq("_id",_id)).first();
             if(doc != null){
+                System.out.println("doc22:\n"+doc);
                 CipherContract cipherContract = new CipherContract(doc);
                 //c2 c3비교
                 if (keywordTest(cipherData, cipherContract)) { //파일에 속한 권한 비교
+                    System.out.println(Base64.toBase64String(cipherContract.cipher));
+                    System.out.println(Base64.toBase64String(cipherContract.IV));
+                    System.out.println("user private key: "+Base64.toBase64String(nosqldb.myUser.eciesPrivateKey));
                     keywordFile.add(eciesManager.decryptCipherContract(cipherContract.cipher, nosqldb.myUser.eciesPrivateKey,cipherContract.IV));
                 }
             }

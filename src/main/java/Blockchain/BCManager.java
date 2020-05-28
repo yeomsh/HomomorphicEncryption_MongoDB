@@ -53,16 +53,16 @@ public class BCManager {
         this.contract.fileData = eciesManager.decryptCipherContract(contract.cipher,user.eciesPrivateKey,contract.IV);
         this.contractGUI = new ContractGUI(this);
         //사용자 모드 별 contractGUI 컨트롤 코드 -> 프로그램 검사하는데는 힘드니까 주석 처리 해둘꼐용  !
-//        if(user.userType == USERTYPE.EMPLOYER){
-//            if(contract.step == 1 || contract.step == 3){
-//                contractGUI.setVisiableAllFalse();
-//            }
-//        }
-//        else{
-//            if(contract.step == 2 || contract.step == 4){
-//                contractGUI.setVisiableAllFalse();
-//            }
-//        }
+        if(user.userType == USERTYPE.EMPLOYER){
+            if(contract.step == 1 || contract.step == 3){
+                contractGUI.setVisiableAllFalse();
+            }
+        }
+        else{
+            if(contract.step == 2 || contract.step == 4){
+                contractGUI.setVisiableAllFalse();
+            }
+        }
     }
 
     public BCManager(User user, Database db, ArrayList<String> ipList, Contract contract, DataSource.Callback callback) throws Exception {
@@ -179,7 +179,7 @@ public class BCManager {
             JSONObject data = contract.fileData;
             byte[] hashDataByte = ((JSONObject) data.get("wHashSignature")).get("plain").toString().getBytes(StandardCharsets.UTF_8);
             byte[] sigHashDataByte = Base64.getDecoder().decode(((JSONObject) data.get("wHashSignature")).get("sig").toString());
-            PublicKey sigPublicKey = KG.makePublicKey(((JSONObject) data.get("oHashSignature")).get("publicKey").toString());
+            PublicKey sigPublicKey = KG.makePublicKey(((JSONObject) data.get("wHashSignature")).get("publicKey").toString());
             if (isVerify(hashDataByte, sigHashDataByte, sigPublicKey)) {
                 System.out.println("점주가 근로자 서명 검증 성공>_<");
                 block = new JSONObject();
@@ -188,11 +188,14 @@ public class BCManager {
                 proofOfWork(((JSONObject) data.get("wHashSignature")).get("plain").toString());
                 if(broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
                     db.removeStepContract(contract._id,user.uid);
-                    //키워드 업로드 -> 파일 업로드 -> zindex 업데이트
-                    contract.IV = eciesManager.makeIV();
-                    String PkString = db.getReceiperECIESpk(user.uid);
-                    contract.cipher = eciesManager.senderEncrypt(PkString,data.toJSONString(),contract.IV);
-                    db.insertStep5contract(contract); //노동자의 임시 서버에 step5로 업데이트
+                    //(he) 키워드 업로드 -> 파일 업로드 -> zindex 업데이트
+                    //contract.IV =
+                    byte[] iv =eciesManager.makeIV();
+                    System.out.println("receiverUID");
+                    String PkString = db.getReceiperECIESpk(contract.receiverUid);
+                    //contract.cipher
+                    byte[] cipher = eciesManager.senderEncrypt(PkString,data.toJSONString(),iv);
+                    db.insertStep5contract(contract._id,contract.receiverUid,iv,cipher); //노동자의 임시 서버에 step5로 업데이트
                     callback.onDataLoaded();
                 }
                 else { //실패하면 그냥 끝

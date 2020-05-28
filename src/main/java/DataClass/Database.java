@@ -34,8 +34,8 @@ public class Database {
     public Database(){
 //        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
 //        MongoClient mongoClient = new MongoClient("192.168.43.253",27017);
-
-        mongoClient = new MongoClient("203.252.157.85", 27017);
+        //203.252.157.85(교수님)
+        mongoClient = new MongoClient("203.252.166.224", 27017);
         database = mongoClient.getDatabase("mydb");
         user = database.getCollection("user");
     }
@@ -74,6 +74,17 @@ public class Database {
         command.put("$pull", data);
         user.updateOne(Filters.eq("uid", uid), command);
         // user.updateOne(Filters.eq("uid", contract.receiverUid), command);
+    }
+    public void insertStep5contract(Object _id, String receiverUid, byte[] iv, byte[] cipher){
+
+        BasicDBObject data = new BasicDBObject();
+        data.put("contractList.$.step", 5);
+        data.put("contractList.$.IV", Base64.toBase64String(iv));
+        data.put("contractList.$.cipher", Base64.toBase64String(cipher));
+        BasicDBObject command = new BasicDBObject();
+        command.put("$set", data);
+        user.updateOne(Filters.and(eq("uid", receiverUid), elemMatch("contractList", eq(_id))), command); //내꺼 업로드
+
     }
     public void insertStep5contract(Contract contract){
         BasicDBObject data = new BasicDBObject();

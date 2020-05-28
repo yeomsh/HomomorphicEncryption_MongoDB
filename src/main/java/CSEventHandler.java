@@ -120,7 +120,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
             frame.addLog("검색할 키워드 : " + keyword);
             if(keyword!=null){
                 try {
-                    keywordFile = manager.searchKeyword(keyword,manager.user);
+                    keywordFile = manager.searchKeyword(keyword);
                 } catch (ParseException ex) {
                     ex.printStackTrace();
                 } catch (Exception exception) {
@@ -167,6 +167,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                 System.out.println(uid + "myIp : " + manager.myIp);
                 manager.user = new User(manager.myIp,uid, userType, manager.idList);
                 manager.uploadUser();
+                manager.setHE();
             } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
                 noSuchAlgorithmException.printStackTrace();
             } catch (IOException ioException) {
@@ -242,8 +243,8 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                     isUpdate = false;
                     //keyword암호문 업로드
                     manager.uploadContract(contract);
-                    //step5임시서버에서 지우기
-                    manager.db.removeStepContract(contract._id, manager.uid);
+                    //step5임시서버에서 지우
+                    manager.db.removeStepContract(contract._id, manager.user.uid);
                 }
             }
             if(!isUpdate) //step5 파일 있었을 때만 다시 contractList 불러오기

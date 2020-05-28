@@ -5,11 +5,7 @@ import DataClass.Database;
 import DataClass.User;
 import GUI.MainFrame;
 import HomomorphicEncryption.*;
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
+import org.bouncycastle.util.encoders.Base64;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import util.*;
@@ -22,7 +18,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Vector;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -87,6 +84,9 @@ public class CSManager {
         //블록체인 서버 OPEN
         server = new Server(3000,chainStr);
     }
+    public void setHE(){
+        he = new HEManager(user);
+    }
 //8c08c74b3ade39532c5e347a8bb94291b558086d3b24e332fe1a1fa92469edbb
 //e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     //제일 처음 로그인 및 회원가입 과정을 수행하는 함수
@@ -114,6 +114,8 @@ public class CSManager {
                     System.exit(0);
                     //다시 uid를 입력하도록 설정
                 }
+                System.out.println("user private key: "+Base64.toBase64String(user.eciesPrivateKey));
+                setHE();
             }
             @Override
             public void onDataFailed() {
@@ -121,14 +123,16 @@ public class CSManager {
                 idList = db.getIdList();
                 JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
                 mHandler.showSignUpDialog();
+
             }
         });
-        he = new HEManager(user);
+
         //iplist.size()의 값이 이상함 -> 로그인은 가능
         //이상한 것이 아니라 이미 있는 user의 경우 continue를 해서 추가가 안 되는 것
         System.out.println("최종 유저 수: "+ ipList.size());
     }
-    public Vector<JSONObject> searchKeyword(String keyword, User user) throws Exception {
+    public Vector<JSONObject> searchKeyword(String keyword) throws Exception {
+        System.out.println("user private key: "+Base64.toBase64String(user.eciesPrivateKey));
         he.setUserPKSet(user);
         return he.searchKeyword(user,keyword);
     }

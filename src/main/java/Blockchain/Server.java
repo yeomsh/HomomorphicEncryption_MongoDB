@@ -118,11 +118,12 @@ class processorText extends Thread {
       os.flush();
    }
 
-   public void chainUpdate(JSONObject data) {
+   public void chainUpdate(JSONObject data) throws IOException {
       synchronized (chainStr) {
          String chain = data.get("content").toString();
          chainStr = new ArrayList<>(Arrays.asList(chain.split(" ")));
          FileManager.reWriteFile(chainStr);
+         BCManager.chainStr = FileManager.readChainFile();
       }
       JSONObject json = new JSONObject();
       json.put("type", "finishSave");
