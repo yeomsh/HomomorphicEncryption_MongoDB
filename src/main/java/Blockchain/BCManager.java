@@ -23,8 +23,8 @@ public class BCManager {
     protected Vector<Client> cList;
     public static JSONObject block;
     public static ArrayList<String> chainStr;
-    ArrayList<String> ipList;
     static int countPOW = 0;
+    public ArrayList<String> ipList = null;
     //관련X
     public Contract contract; //이전까지 생성된 계약서 데이터
     public ContractGUI contractGUI;
@@ -44,11 +44,10 @@ public class BCManager {
         this.contractGUI = new ContractGUI(this);
     }
 
-    public BCManager(User user, Database db, ArrayList<String> ipList,Contract contract) throws Exception {
+    public BCManager(User user, Database db, Contract contract) throws Exception {
         //계약서를 받아올 때 복호화해서 받아옴
         this.db = db;
         this.user = user;
-        this.ipList = ipList;
         this.contract = contract;
         this.contract.fileData = eciesManager.decryptCipherContract(contract.cipher,user.eciesPrivateKey,contract.IV);
         this.contractGUI = new ContractGUI(this);
@@ -65,10 +64,10 @@ public class BCManager {
         }
     }
 
-    public BCManager(User user, Database db, ArrayList<String> ipList, Contract contract, DataSource.Callback callback) throws Exception {
-        this(user,db,ipList,contract);
+    public BCManager(User user, Database db, Contract contract, DataSource.Callback callback) throws Exception {
+        this(user,db,contract);
         this.callback = callback;
-        //점주 /근로자 마다 할 수 있는 step이 다른데 그것도 체크해야함
+        //        //점주 /근로자 마다 할 수 있는 step이 다른데 그것도 체크해야함
     }
     public void saveContractWithCipher(JSONObject data) {
         System.out.println(user.uid + "~~" + contract.receiverUid);
@@ -80,9 +79,10 @@ public class BCManager {
         db.insertStepContract(contract,eciesManager.senderEncrypt(PkString,data.toJSONString(),contract.IV));
     }
 
-    public void chainUpdate() {
+    public void chainUpdate() throws Exception {
         //의문사항 체인 가장 긴걸로 업데이트하라고 전부 뿌리는데, 그럼 악의적인 사용자가 가장 길게 만들어서 뿌리면 어떡하지 . .  ?!?
         try {
+            ipList = db.getIpList();
             cList = new Vector<>();
             for (String ip: ipList){
                 cList.addElement(new Client(ip, "chainRequest"));

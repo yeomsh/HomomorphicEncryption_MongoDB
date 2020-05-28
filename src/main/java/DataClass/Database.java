@@ -2,21 +2,16 @@ package DataClass;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.encoders.Hex;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
 import util.StringUtil;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
@@ -30,12 +25,14 @@ public class Database {
     protected MongoDatabase database;
     protected MongoCollection<Document> user;
     protected MongoCursor<Document> cursor;
-    public User myUser;
+    public User myUser = null;
     public Database(){
 //        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
 //        MongoClient mongoClient = new MongoClient("192.168.43.253",27017);
         //203.252.157.85(교수님)
-        mongoClient = new MongoClient("203.252.166.224", 27017);
+//        mongoClient = new MongoClient("203.252.166.224", 27017);(501컴퓨터)
+
+        mongoClient = MongoClients.create();
         database = mongoClient.getDatabase("mydb");
         user = database.getCollection("user");
     }
@@ -162,18 +159,17 @@ public class Database {
         }
         return idList;
     }
-    public ArrayList<String> getIpList(String myIp, DataSource.Callback callback) throws Exception {
+    public ArrayList<String> getIpList() throws Exception {
         ArrayList<String> ipList = new ArrayList<>();
         BasicDBObject filter = new BasicDBObject();
         filter.put("ip", 1);
         filter.put("_id", 0);
-        Boolean isAlreadyUser = false;
         cursor = user.find().projection(filter).iterator();
         try {
             while (cursor.hasNext()) {
                 Document d = cursor.next();
-                if(d.get("ip").toString().equals(myIp)) {
-                    isAlreadyUser= true;
+                System.out.println(d.getString("ip"));
+                if(d.get("ip").toString().equals(myUser.ip)) {
                     continue;
                 }
                 ipList.add(d.get("ip").toString()); //그냥 d하면 Document{{ip=1}} 로 string 생성됨
@@ -181,17 +177,26 @@ public class Database {
         } finally {
             cursor.close();
         }
-        if(isAlreadyUser) callback.onDataLoaded();
-        else callback.onDataFailed(); //회원가입 요청
         return ipList;
     }
-    public User getUser(String ip) throws InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    public User getUser(String uid, String ip, DataSource.Callback callback) throws Exception {
         BasicDBObject filter = new BasicDBObject();
         filter.put("contractList", 0);
         cursor = user.find(Filters.eq("ip",ip)).projection(filter).iterator();
-        Document d = cursor.next();
-        this.myUser = new User(d);
-        System.out.println(myUser.toString());
+        if(cursor.hasNext()){
+            Document d = cursor.next();
+            System.out.println(d);
+            if(d.get("uid").equals(uid)){
+                this.myUser = new User(d);
+                System.out.println(myUser.toString());
+            }
+            else{//there is no match uid and ip
+                callback.onDataLoaded();
+            }
+        }
+        else{ //there is no such uid
+            callback.onDataFailed();
+        }
         return myUser;
     }
 

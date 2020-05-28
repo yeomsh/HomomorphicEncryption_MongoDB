@@ -18,6 +18,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.Timer;
@@ -29,11 +30,10 @@ public class CSManager {
     * 1) swing 끄면서 블록체인 서버 close하고 open했던거 다 꺼야함 !!
     *
     * */
-    protected ArrayList<String> ipList;
+    //protected ArrayList<String> ipList;
     public ArrayList<String> idList;
     protected final ArrayList<String> chainStr = FileManager.readChainFile();
     protected String myIp = "";
-    protected String uid = "";
     protected KeyGenerator KG;
     public MainFrame frame;
     public HEManager he;
@@ -95,41 +95,28 @@ public class CSManager {
         //회원가입하면, 키 발급, 아이디 발급, (kgc공개키는 키워드 등록할 때 받기(?)), 데베 등록
         InetAddress ip = InetAddress.getLocalHost();
         myIp = ip.getHostAddress();
-        //myIp = "127.0.0.1";
         System.out.println("ip : " + myIp);
-        uid = mHandler.showInitDialog(myIp);
-        System.out.println("사용자의 uid : "+uid + "\n 사용자의 ip : " + myIp);
-        frame.addLog("사용자의 uid : "+uid + "\n 사용자의 ip : " + myIp);
-        ipList = db.getIpList(myIp, new DataSource.Callback() {
+        String uid = mHandler.showInitDialog(myIp);
+        System.out.println("사용자가 입력한 uid : "+uid + "\n 사용자의 ip : " + myIp);
+        frame.addLog("사용자가 입력한 uid : "+uid + "\n 사용자의 ip : " + myIp);
+        user = db.getUser(StringUtil.getSha256(uid), myIp, new DataSource.Callback() {
             @Override
-            public void onDataLoaded() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
-                user = db.getUser(myIp);
-                System.out.println(user.ip + ", " + user.uid + "," + StringUtil.getSha256(uid));
-                if(StringUtil.getSha256(uid).equals(user.uid)) {
-                    frame.addLog("등록된 사용자 로그인 : " + user.toString());
-                }
-                else{
-                    frame.addLog("잘못된 uid 입력");
-                    JOptionPane.showMessageDialog(null,"로그인 실패","Message",JOptionPane.INFORMATION_MESSAGE);
-                    System.exit(0);
-                    //다시 uid를 입력하도록 설정
-                }
-                System.out.println("user private key: "+Base64.toBase64String(user.eciesPrivateKey));
-                setHE();
+            public void onDataLoaded() throws Exception { //uid랑 ip랑 매칭x
+                frame.addLog("잘못된 uid 입력");
+                JOptionPane.showMessageDialog(null, "로그인 실패", "Message", JOptionPane.INFORMATION_MESSAGE);
+                System.exit(0);
             }
             @Override
-            public void onDataFailed() {
-                //아이디 중복 확인 필요
+            public void onDataFailed() { //회원가입
                 idList = db.getIdList();
                 JOptionPane.showMessageDialog(null,"회원가입을 진행합니다.","Message",JOptionPane.INFORMATION_MESSAGE);
                 mHandler.showSignUpDialog();
-
             }
         });
-
-        //iplist.size()의 값이 이상함 -> 로그인은 가능
-        //이상한 것이 아니라 이미 있는 user의 경우 continue를 해서 추가가 안 되는 것
-        System.out.println("최종 유저 수: "+ ipList.size());
+        if(user != null){ //(정상 로그인)uid랑 ip랑 매칭된 값을 입력했을 떄
+            System.out.println(user);
+            setHE();
+        }
     }
     public Vector<JSONObject> searchKeyword(String keyword) throws Exception {
         System.out.println("user private key: "+Base64.toBase64String(user.eciesPrivateKey));
@@ -144,6 +131,8 @@ public class CSManager {
         user.setContractList(db.getUserContractList(user.uid));
     }
     public void uploadUser() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, NoSuchProviderException, IOException {
+        System.out.println(user.uid);
+        System.out.println(user.id);
         db.insertUser(user);
     }
     public static void main(String[] args) throws Exception {
@@ -174,14 +163,19 @@ class GenesisServer extends TimerTask  {
         ipList.add("192.168.56.1"); //확인을 위해 내 아이피하나 넣어뒀어 ! 상히가 확인해보고 싶으면 상히 ip넣어두면도ㅐ
 
         BCManager bcManager = new BCManager(ipList);
-        bcManager.chainUpdate();
-        bcManager.proofOfWork(StringUtil.randomString());
-        if(bcManager.broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
-            System.out.println("브로드 캐스트에서 작업증명결과가 옳다고 나옴-> 성공");
+        try {
+            bcManager.chainUpdate();
+            bcManager.proofOfWork(StringUtil.randomString());
+            if(bcManager.broadCastBlock()){ //작업증명에 성공하면 -> 임시서버에서 지우고 -> 키워드 업로드
+                System.out.println("브로드 캐스트에서 작업증명결과가 옳다고 나옴-> 성공");
+            }
+            else { //실패하면 그냥 끝
+                System.out.println("브로드 캐스트에서 작업증명결과가 옳지않다고 나옴 -> 실패");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        else { //실패하면 그냥 끝
-            System.out.println("브로드 캐스트에서 작업증명결과가 옳지않다고 나옴 -> 실패");
-        }
+
     }
     public void close(){
         jobScheduler.cancel();

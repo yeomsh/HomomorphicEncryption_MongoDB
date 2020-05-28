@@ -56,6 +56,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
 //        String myIp = ip.getHostAddress();
         //myIp = "127.0.0.1";
 //        int select = JOptionPane.showConfirmDialog(null,"my Ip : "+myIp,"로그인",JOptionPane.OK_CANCEL_OPTION);
+
         String uid = JOptionPane.showInputDialog("myIP : " + myIp + "\n아이디(uid) : ");
         System.out.println(uid);
         if(uid == null) {
@@ -87,8 +88,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                 if (manager.user.contractList.get(index).step == 4) {
                     DataClass.Contract contract = manager.user.contractList.get(index);
                     try {
-                        new BCManager(manager.user, manager.db, manager.ipList, contract
-                                , new DataSource.Callback() {
+                        new BCManager(manager.user, manager.db,contract,new DataSource.Callback() {
                             @Override //HE 작업하기
                             public void onDataLoaded() throws Exception {
                                 manager.uploadContract(contract);
@@ -103,7 +103,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                     }
                 } else {
                     try {
-                        new BCManager(manager.user, manager.db, manager.ipList,manager.user.contractList.get(index));
+                        new BCManager(manager.user, manager.db,manager.user.contractList.get(index));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
