@@ -5,6 +5,11 @@ import DataClass.Database;
 import DataClass.User;
 import GUI.MainFrame;
 import HomomorphicEncryption.*;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import util.*;
@@ -138,6 +143,9 @@ public class CSManager {
         db.insertUser(user);
     }
     public static void main(String[] args) throws Exception {
+//        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
+//        MongoClient mongoClient = new MongoClient("192.168.43.253",27017);
+
         CSManager t = new CSManager();
         //Genesis server 호출 코드
 //        Server server = new Server(3000,FileManager.readChainFile()); //필수는 아니고 확인해보려고 넣은거얌

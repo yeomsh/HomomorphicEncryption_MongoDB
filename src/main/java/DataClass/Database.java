@@ -2,6 +2,7 @@ package DataClass;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
+import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bouncycastle.util.encoders.Base64;
@@ -31,7 +32,10 @@ public class Database {
     protected MongoCursor<Document> cursor;
     public User myUser;
     public Database(){
-        mongoClient = MongoClients.create();
+//        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
+//        MongoClient mongoClient = new MongoClient("192.168.43.253",27017);
+
+        mongoClient = new MongoClient("203.252.157.85", 27017);
         database = mongoClient.getDatabase("mydb");
         user = database.getCollection("user");
     }
