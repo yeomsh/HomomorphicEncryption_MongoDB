@@ -1,7 +1,11 @@
 package DataClass;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.*;
+
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bouncycastle.util.encoders.Base64;
@@ -28,11 +32,11 @@ public class Database {
     public User myUser = null;
     public Database(){
 //        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
-//        MongoClient mongoClient = new MongoClient("192.168.43.253",27017);
+ //       MongoClient mongoClient = new MongoClient("192.168.43.253",27017);
         //203.252.157.85(교수님)
-//        mongoClient = new MongoClient("203.252.166.224", 27017);(501컴퓨터)
+        mongoClient = new MongoClient("203.252.166.224", 27017); //(501컴퓨터)
 
-        mongoClient = MongoClients.create();
+        //mongoClient = MongoClients.create();
         database = mongoClient.getDatabase("mydb");
         user = database.getCollection("user");
     }

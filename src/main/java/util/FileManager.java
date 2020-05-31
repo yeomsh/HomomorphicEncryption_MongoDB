@@ -1,10 +1,38 @@
 package util;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.*;
 import java.util.ArrayList;
 
 public class FileManager {
+   static String src2 = ".\\store.txt";
    static String src = ".\\chain.txt";
+   public static ArrayList<String> readStore(){
+      ArrayList<String> storeList = new ArrayList<>();
+      BufferedReader in = null;
+      try {
+         in = new BufferedReader(new FileReader(src));
+         String s;
+         while ((s = in.readLine()) != null) {
+            storeList.add(s);
+         }
+         in.close();
+      }  catch (IOException e) {
+         System.err.println(e);
+      } finally {
+         try {
+            if (in != null) {
+               in.close();
+            }
+         } catch (Exception ex) {
+         }
+      }
+      return storeList;
+   }
    public static ArrayList<String> readChainFile() throws IOException {
       ArrayList<String> retStr = new ArrayList<>();
       BufferedReader in = null;
