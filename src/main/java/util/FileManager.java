@@ -15,10 +15,11 @@ public class FileManager {
       ArrayList<String> storeList = new ArrayList<>();
       BufferedReader in = null;
       try {
-         in = new BufferedReader(new FileReader(src));
+         in = new BufferedReader(new FileReader(src2));
          String s;
          while ((s = in.readLine()) != null) {
             storeList.add(s);
+            System.out.println(s);
          }
          in.close();
       }  catch (IOException e) {
