@@ -104,27 +104,13 @@ public class HEManager {
             ECIESManager eciesManager = new ECIESManager();
             contract.fileData = eciesManager.decryptCipherContract(contract.cipher, user.eciesPrivateKey,contract.IV); //이걸 static으로 만들고싶음
         }
-        String[] keywordArr = new String[]{contract.fileData.get("oName").toString(), contract.fileData.get("wName").toString()};
-        System.out.println("oName: "+contract.fileData.get("oName").toString());
+        String[] keywordArr = new String[]{((JSONObject)contract.fileData.get("oSign")).get("oSign1").toString(), contract.fileData.get("wName").toString()};
+        System.out.println("oSign: "+((JSONObject)contract.fileData.get("oSign")).get("oSign1").toString());
         System.out.println("wName: "+contract.fileData.get("wName").toString());
-//        for (String str: keywordArr){
-//            user.ChangeUserR();
-//            Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(SHA1(str),16),user.getAu(), KGC.pkSet),contract.fileData);
-//            //키워드 기반 암호문 생성
-//            CipherData[] cipherDatas = new CipherData[2];
-//            for(int i = 0; i<2;i++){ //한 파일에 키워드가 2개니까 !
-//                user.ChangeUserR();
-//                cipherDatas[i] = new CipherData(user, new BigInteger(SHA1(keywordArr[i]),16),user.getAu(), KGC.pkSet);
-//            }
-//            System.out.println("requestToUpload: uploadKeyword_nosql");
-//            Vector<Object> saveKeywordId = HEServer.uploadKeyword_nosql(cipherDatas);
-//            System.out.println("requestToUpload: updateZString_nosql");
-//            HEServer.updateZString_nosql(saveKeywordId,fileId);
-//        }
         //점주는 노동자의 qid를 모르기때뭉네 한꺼번에 업로드할 수 없음
         user.ChangeUserR();
         //일단 oName이라 해두는데 , 이건 자기 타입에 맞게 oName or wName으로 분기시키면 될듯
-        Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(StringUtil.SHA1(contract.fileData.get("oName").toString()),16),user.getAu(), KGC.pkSet),contract);
+        Object fileId = HEServer.uploadContract_nosql(new CipherData(user, new BigInteger(StringUtil.SHA1(keywordArr[0]),16),user.getAu(), KGC.pkSet),contract);
         System.out.println("file id: "+fileId);
         //키워드 기반 암호문 생성
         CipherData[] cipherDatas = new CipherData[2];
