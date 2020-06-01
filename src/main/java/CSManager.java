@@ -7,22 +7,21 @@ import GUI.MainFrame;
 import HomomorphicEncryption.*;
 import org.bouncycastle.util.encoders.Base64;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import util.*;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
-import java.sql.Struct;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.util.*;
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class CSManager {
     /*
@@ -41,15 +40,29 @@ public class CSManager {
     public CSEventHandler mHandler;
     public Database db;
     protected Server server;
+
+    //testContract를 위한 데이터 SET
+    ArrayList<String> first_nameStr;
+    ArrayList<String> last_nameStr;
+    ArrayList<String> storeStr;
+
+
     public CSManager() throws Exception {
         //CSManager를 실행시키기위해서 필요한 setup들
+
+        //데이터 set읽기
+        readStoreAndName();
+        //랜덤 데이터 넣어서 test용 contract 만들기
+        makeTestContract();
 
         initKGCAndServer();
         initFrame();
         StartLog();
-        //DataClass.Database dd = new NoSQLDB(); //부모는 자식을 품을 수 있는데, 자식은 부모를 품지 못함(자식에게만 있는 변수를 부모껄론 접근을 못하니까!?!)
         //제일 처음 로그인 및 회원가입 과정을 수행하는 함수
         initLogin();
+        //DataClass.Database dd = new NoSQLDB(); //부모는 자식을 품을 수 있는데, 자식은 부모를 품지 못함(자식에게만 있는 변수를 부모껄론 접근을 못하니까!?!)
+
+
     }
     public void initFrame(){
         frame = new MainFrame(); //BCManager 처럼 this를 넘겨줘서 handler처리도 가능하긴함 (default package 아닐경우)
@@ -135,11 +148,53 @@ public class CSManager {
         System.out.println(user.id);
         db.insertUser(user);
     }
+
+    public void readStoreAndName(){
+        FileManager fileManager = new FileManager();
+
+        first_nameStr = fileManager.readFirst_name();
+        last_nameStr = fileManager.readLast_name();
+        storeStr = fileManager.readStore();
+    }
+    public void makeTestContract(){
+
+        String randStore = storeStr.get((int)(Math.random()*storeStr.size()));
+        String randName = last_nameStr.get((int) (Math.random()*last_nameStr.size()))
+                + first_nameStr.get((int) (Math.random()*first_nameStr.size()));
+
+        System.out.println("설정된 상호명 : "+  randStore + ", 이름 : " + randName);
+        JSONParser p = new JSONParser();
+        try {
+            JSONObject testContract = (JSONObject)p.parse(
+                    "{\"timer1\":{\"min\":0,\"hour\":0}," +
+                            "\"insurance\":{\"국민연금\":false,\"건강보험\":false,\"고용보험\":false,\"산재보험\":false}," +
+                            "\"wSign\":{\"wSign3\":\"\",\"wSign2\":\"\",\"wSign1\":\"\"}," +
+                            "\"timer2\":{\"min\":0,\"hour\":0}," +
+                            "\"timer3\":{\"min\":0,\"hour\":0}," +
+                            "\"restDay\":{\"토\":false,\"월\":false,\"화\":false,\"수\":false,\"금\":false,\"목\":false,\"일\":false}," +
+                            "\"contractDate\":{\"date\":1,\"month\":6,\"year\":2020}," +
+                            "\"timer4\":{\"min\":0,\"hour\":0}," +
+                            "\"contractTermEnd\":{\"date\":1,\"month\":6,\"year\":2020}," +
+                            "\"workDay\":{\"토\":false,\"월\":false,\"화\":false,\"수\":false,\"금\":false,\"목\":false,\"일\":false}," +
+                            "\"content\":\"\"," +
+                            "\"oSign\":{\"oSign4\":\"\",\"oSign1\":\"" + randStore + "\",\"oSign2\":\"\",\"oSign3\":\"\"}," +
+                            "\"wName\":\"" + randName + "\",\"contractTermStart\":{\"date\":1,\"month\":6,\"year\":2020}," +
+                            "\"oName\":\"oname\",\"place\":\"\"," +
+                            "\"wage\":{\"wage1\":\"\",\"wage4\":\"\",\"wage5\":{\"직접 지급\":false,\"근로자 명의 통장 입금\":false},\"wage2_2\":\"\",\"wage3_1\":{\"x\":false,\"o\":false},\"wage2_1\":{\"x\":false,\"o\":false},\"wage3_2\":\"\"}}"
+            );
+            System.out.println(testContract);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public static void main(String[] args) throws Exception {
 //        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
 //        MongoClient mongoClient = new MongoClient("192.168.43.253",27017);
 
         CSManager t = new CSManager();
+
         //Genesis server 호출 코드
 //        Server server = new Server(3000,FileManager.readChainFile()); //필수는 아니고 확인해보려고 넣은거얌
 //        BCManager.chainStr = FileManager.readChainFile(); //필수

@@ -10,7 +10,55 @@ import java.util.ArrayList;
 
 public class FileManager {
    static String src2 = ".\\store.txt";
+   static String first_nameSrc = ".\\first_name.txt";
+   static String last_nameSrc = ".\\last_name.txt";
    static String src = ".\\chain.txt";
+   public static ArrayList<String> readFirst_name(){
+      ArrayList<String> first_nameList = new ArrayList<>();
+      BufferedReader in = null;
+      try {
+         in = new BufferedReader(new FileReader(first_nameSrc));
+         String s;
+         while ((s = in.readLine()) != null) {
+            first_nameList.add(s);
+         }
+         in.close();
+      }  catch (IOException e) {
+         System.err.println(e);
+      } finally {
+         try {
+            if (in != null) {
+               in.close();
+            }
+         } catch (Exception ex) {
+         }
+      }
+      return first_nameList;
+   }
+   public static ArrayList<String> readLast_name(){
+      ArrayList<String> last_nameList = new ArrayList<>();
+      BufferedReader in = null;
+      try {
+         in = new BufferedReader(new FileReader(last_nameSrc));
+         String s;
+         while ((s = in.readLine()) != null) {
+            last_nameList.add(s);
+         }
+         in.close();
+      }  catch (IOException e) {
+         System.err.println(e);
+      } finally {
+         try {
+            if (in != null) {
+               in.close();
+            }
+         } catch (Exception ex) {
+         }
+      }
+      return last_nameList;
+   }
+
+
    public static ArrayList<String> readStore(){
       ArrayList<String> storeList = new ArrayList<>();
       BufferedReader in = null;
@@ -19,7 +67,6 @@ public class FileManager {
          String s;
          while ((s = in.readLine()) != null) {
             storeList.add(s);
-            System.out.println(s);
          }
          in.close();
       }  catch (IOException e) {

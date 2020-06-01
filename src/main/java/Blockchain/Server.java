@@ -112,6 +112,7 @@ class processorText extends Thread {
       String nonce = data.get("nonce").toString();
       Long timeStamp = (Long) data.get("timeStamp");
       int last = BCManager.chainStr.size() - 1; //음수에 대한 예외처리가 필요한가..? 제네시스블록이 있어서 체인이 없을린 X
+      System.out.println(BCManager.chainStr.get(last)+"*****");
       String checkPOW = StringUtil.getSha256(BCManager.chainStr.get(last) + timeStamp + nowHash + nonce);
       if (checkPOW.equals(proofHash)) os.println("success");
       else os.println("fail");

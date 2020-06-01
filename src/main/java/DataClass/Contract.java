@@ -65,14 +65,6 @@ public class Contract {
         //this.fileData = (JSONObject) obj;
     }
 
-//    public byte[] makeIV(){
-//        byte[] IV = new byte[16];
-//        SecureRandom random = new SecureRandom();
-//        random.nextBytes(IV);
-//        this.IV = IV;
-//        return IV;
-//    }
-
     public String sha256(String str){
         MessageDigest digest = null;
         try {
