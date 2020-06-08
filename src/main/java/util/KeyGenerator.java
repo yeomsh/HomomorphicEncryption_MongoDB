@@ -66,7 +66,7 @@ public class KeyGenerator {
 		pemFile.write(filename);
 		System.out.println(String.format("EC 암호키 %s을(를) %s 파일로 내보냈습니다.", description, filename));
 	}
-	public String replaceKey(Boolean isPrivate,String keyName, String tag) throws IOException {
+	public static String replaceKey(Boolean isPrivate,String keyName, String tag) throws IOException {
 		String data = StringUtil.readPemString(keyName);
 		System.out.print(data + "\n");
 		// 불필요한 설명 구문을 제거합니다.
@@ -115,7 +115,7 @@ public class KeyGenerator {
 
 		return makePublicKey(data);
 	}
-	public PublicKey makePublicKey(String data) throws NoSuchAlgorithmException, InvalidKeySpecException {
+	public static PublicKey makePublicKey(String data) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		byte[] decoded = Base64.decode(data);
 		X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
 		KeyFactory factory = KeyFactory.getInstance("EC", bouncyCastleProvider);

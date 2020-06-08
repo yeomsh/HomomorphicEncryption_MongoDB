@@ -4,24 +4,21 @@ import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Vector;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import util.FileManager;
 import util.StringUtil;
 
-public class Server extends Thread {
+public class BCServer extends Thread {
 
    protected int portNum;
-   protected Vector<processorText> clientVector;
    protected ArrayList<String> chainStr;
    protected ServerSocket server;
 
-   public Server(int port, ArrayList<String> Chain) {
+   public BCServer(int port, ArrayList<String> Chain) {
       portNum = port;
       chainStr = Chain;
-      clientVector = new Vector<>();
       try {
          server = new ServerSocket(port);
          start();
@@ -40,15 +37,14 @@ public class Server extends Thread {
             System.out.println("server : "+client.getInetAddress().getHostAddress() + " 로부터 연결되었습니다.");
             processorText cp = new processorText(client, chainStr, this);
             cp.start();
-            synchronized (clientVector) { // synchronized: 누군가 clientVector 사용시 접근 못하게 lock (동기화)
-               clientVector.addElement(cp);
-            }
          }
       } catch (SocketException ex) {
          ex.printStackTrace();
       } catch (IOException ex) {
          System.out.println("Error while connecting to Client!");
          System.exit(1);
+      }finally {
+         this.close();
       }
    }
 
@@ -66,7 +62,7 @@ public class Server extends Thread {
 }
 
 class processorText extends Thread {
-   protected Server server;
+   protected BCServer server;
    protected Socket socket;
    protected ArrayList<String> chainStr;
    protected BufferedReader is;
@@ -74,7 +70,7 @@ class processorText extends Thread {
    protected ObjectOutputStream oos = null;
    protected JSONObject data = new JSONObject();
 
-   public processorText(Socket socket, ArrayList<String> chainStr, Server server) {
+   public processorText(Socket socket, ArrayList<String> chainStr, BCServer server) {
       this.server = server;
       this.socket = socket;
       this.chainStr = chainStr;

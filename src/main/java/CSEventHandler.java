@@ -2,10 +2,8 @@ import Blockchain.BCManager;
 import DataClass.Contract;
 import DataClass.DataSource;
 import DataClass.USERTYPE;
-import DataClass.User;
 import GUI.ContractGUI;
 import GUI.MainFrame;
-import HomomorphicEncryption.CipherContract;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
@@ -17,9 +15,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -88,13 +83,18 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                 if (manager.user.contractList.get(index).step == 4) {
                     DataClass.Contract contract = manager.user.contractList.get(index);
                     try {
-                        new BCManager(manager.user, manager.db,contract,new DataSource.Callback() {
+                        new BCManager(manager.user, manager.db,contract,new DataSource.LoadDataCallback() {
                             @Override //HE 작업하기
                             public void onDataLoaded() throws Exception {
-                                manager.uploadContract(contract);
+                                manager.uploadContract(contract,true);
                             }
                             @Override //그냥 끝내기
                             public void onDataFailed() {
+
+                            }
+
+                            @Override
+                            public void onDataLoaded(Vector<JSONObject> keywordFile) {
 
                             }
                         });
@@ -120,22 +120,38 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
             frame.addLog("검색할 키워드 : " + keyword);
             if(keyword!=null){
                 try {
-                    keywordFile = manager.searchKeyword(keyword);
+                    manager.searchKeyword(keyword, new DataSource.LoadDataCallback() {
+                        @Override
+                        public void onDataLoaded() throws Exception {
+
+                        }
+
+                        @Override
+                        public void onDataFailed() {
+
+                        }
+
+                        @Override
+                        public void onDataLoaded(Vector<JSONObject> keywordFiles) {
+                            keywordFile = keywordFiles;
+                            for(JSONObject i : keywordFile)
+                                frame.addLog("file : \n" + i.toJSONString());
+                            //데이터 받아온거 뿌리기
+                            frame.mpSearch.setComboBoxContract(keywordFile);
+                            try {
+                                manager.loadContractData();
+                            } catch (ParseException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
                 } catch (ParseException ex) {
                     ex.printStackTrace();
                 } catch (Exception exception) {
                     exception.printStackTrace();
                 }
 
-                for(JSONObject i : keywordFile)
-                    frame.addLog(i.toString() + "\n file : " + i);
-                //데이터 받아온거 뿌리기
-                frame.mpSearch.setComboBoxContract(keywordFile);
-                try {
-                    manager.loadContractData();
-                } catch (ParseException ex) {
-                    ex.printStackTrace();
-                }
+
                 //키워드 검색하기
                 //검색끝나면 파일 보여주는 항목 update한 후 보여주기
                 //뭔가 콤보박스 선택못하게 하거나 안보이게 한 후 파일 다 받아온 다음에 쓸 수 있게
@@ -165,9 +181,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                 userType = 1;
             try {
                 System.out.println(uid + "myIp : " + manager.myIp);
-                manager.user = new User(manager.myIp,uid, userType, manager.idList);
-                manager.uploadUser();
-                manager.setHE();
+                manager.uploadUser(uid,userType);
             } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
                 noSuchAlgorithmException.printStackTrace();
             } catch (IOException ioException) {
@@ -242,7 +256,7 @@ public class CSEventHandler implements ActionListener, ChangeListener, WindowLis
                 if(contract.step == 5){
                     isUpdate = false;
                     //keyword암호문 업로드
-                    manager.uploadContract(contract);
+                    manager.uploadContract(contract,false);
                     //step5임시서버에서 지우
                     manager.db.removeStepContract(contract._id, manager.user.uid);
                 }

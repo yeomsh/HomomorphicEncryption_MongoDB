@@ -1,42 +1,39 @@
 package HomomorphicEncryption;
 
+import DataClass.CipherData;
 import DataClass.Contract;
 import DataClass.Database;
-import DataClass.User;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bouncycastle.util.encoders.Base64;
 import org.bson.Document;
-import org.json.simple.JSONObject;
 
-import javax.print.Doc;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 import static com.mongodb.client.model.Filters.*;
 
-public class NoSQLDB extends Database{
+public class HEDataBase extends Database{
 
-    MongoCollection<Document> keywordPEKS;
-    MongoCollection<Document> filePEKS;
-    MongoCollection<Document> zindex;
+    public static MongoCollection<Document> keywordPEKS = database.getCollection("keywordPEKS");
+    public static MongoCollection<Document> filePEKS = database.getCollection("filePEKS");;
+    public static MongoCollection<Document> zindex = database.getCollection("zindex");
+    public static MongoCollection<Document> serverPublicKey = database.getCollection("serverPublicKey");
 
-    public NoSQLDB(User user){
-        this.myUser = user;
-        keywordPEKS = database.getCollection("keywordPEKS");
-        filePEKS = database.getCollection("filePEKS");
-        zindex = database.getCollection("zindex");
-    }
     public void delete(){
         keywordPEKS.drop();
         filePEKS.drop();
         zindex.drop();
         user.drop();
+    }
+    public static Object insertContract(Contract contract){
+        Document filedoc = fileDoc(contract);
+        filePEKS.insertOne(filedoc);
+        return filedoc.get("_id");
     }
     public Object insertContract(CipherData cipherData, Contract contract){
         Document filedoc = fileDoc(cipherData.c2, cipherData.c3,contract);
@@ -44,27 +41,59 @@ public class NoSQLDB extends Database{
         cipherData.setFileId(filedoc.get("_id"));
         return filedoc.get("_id");
     }
+    public static void insertContract(CipherData cipherData, Object fileId){
+        filePEKS.updateOne(Filters.eq("_id",fileId),new Document("$set", new Document("c2",cipherData.c2.toString(16)).append("c3",cipherData.c3.toString(16))));
+    }
 
-    public Object insertKeywordPEKS(CipherData cipherData){
+    public static Object insertKeywordPEKS(CipherData cipherData){
         Document keyworddoc = keywordDoc(cipherData.c1, cipherData.c2);
         keywordPEKS.insertOne(keyworddoc);
         cipherData.setFileId(keyworddoc.get("_id"));
-
         return keyworddoc.get("_id");
     }
 
-    public Document keywordDoc(BigInteger c1, BigInteger c2){
+    public static AGCDPublicKey getServerPublicKeyX0(){
+        cursor = serverPublicKey.find(Filters.eq("_id", 0)).iterator();
+        Document doc = cursor.next();
+        return new AGCDPublicKey(new BigInteger(doc.get("key").toString(),16),new BigInteger(doc.get("q").toString(), 16), new BigInteger(doc.get("r").toString(), 16));
+    }
+    public static AGCDPublicKey getServerPublicKey(int index){
+        System.out.println("HEDatabasae> getServerPublicKey"+index);
+        cursor = serverPublicKey.find(Filters.eq("_id", index)).iterator();
+        return new AGCDPublicKey(new BigInteger(cursor.next().get("key").toString(),16));
+    }
+    public static Boolean hasSeverPublicKey(){
+        return serverPublicKey.countDocuments()>0;
+    }
+    public static void uploadServerPublickey(Vector<AGCDPublicKey> pkSet){
+        System.out.println("pkSet SIZE: "+pkSet.size());
+        MongoCollection<Document> serverPublicKey = database.getCollection("serverPublicKey");
+
+        for (int i = 0; i < pkSet.size(); i++) {
+            if(i == 0){
+                serverPublicKey.insertOne(new Document("_id",i).append("key",pkSet.get(i).pk.toString(16)).append("q",pkSet.get(i).getQ().toString(16)).append("r",pkSet.get(i).getR().toString(16)));
+            }
+            else{
+                serverPublicKey.insertOne(new Document("_id",i).append("key",pkSet.get(i).pk.toString(16)));
+            }
+
+        }
+    }
+    public static Document keywordDoc(BigInteger c1, BigInteger c2){
         return new Document("c1", c1.toString(16)).append("c2", c2.toString(16));
     }
 
-    public Document fileDoc(BigInteger c2, BigInteger c3, Contract contract){
+    public static Document fileDoc(Contract contract){
+        return new Document("file",new Document("IV", Base64.toBase64String(contract.IV)).append("cipher",Base64.toBase64String(contract.cipher)));
+    }
+    public static Document fileDoc(BigInteger c2, BigInteger c3, Contract contract){
         return new Document("c2", c2.toString(16)).append("c3", c3.toString(16)).append("file",new Document("IV", Base64.toBase64String(contract.IV)).append("cipher",Base64.toBase64String(contract.cipher)));
     }
 
-    public Document zIndexFileInfoDoc(Object _id, Boolean exist){
+    public static Document zIndexFileInfoDoc(Object _id, Boolean exist){
         return new Document("_id",_id).append("exist",exist);
     }
-    public void updateZString(HashMap<Object,Boolean> uploadKeywordMap, Object fileId){
+    public static Boolean updateZString(HashMap<Object,Boolean> uploadKeywordMap, Object fileId){
         //기존 데이터 백업
         cursor = zindex.find().iterator();
         ArrayList<Document> list = new ArrayList<>();
@@ -81,6 +110,7 @@ public class NoSQLDB extends Database{
         command.put("$set", data);
         //키워드 2개에 대해 fileList 작업
         for(Object keywordId: uploadKeywordMap.keySet()){
+            System.out.println("fileid: "+fileId);
             System.out.println("KeywordId: "+keywordId);
             if(uploadKeywordMap.get(keywordId)){ //기존에 있던 키워드
                 System.out.println("true 실행");
@@ -94,5 +124,6 @@ public class NoSQLDB extends Database{
                 list.remove(list.size()-1);
             }
         }
+        return true;
     }
 }

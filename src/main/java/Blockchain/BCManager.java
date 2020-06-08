@@ -1,7 +1,6 @@
 package Blockchain;
 
 import DataClass.*;
-import ECIES.ECIES;
 import GUI.ContractGUI;
 import ECIES.ECIESManager;
 import org.json.simple.JSONObject;
@@ -11,6 +10,7 @@ import util.StringUtil;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -20,7 +20,7 @@ import java.util.Vector;
 
 public class BCManager {
     //블록체인 관련
-    protected Vector<Client> cList;
+    protected Vector<BCClient> cList;
     public static JSONObject block;
     public static ArrayList<String> chainStr;
     static int countPOW = 0;
@@ -31,9 +31,11 @@ public class BCManager {
     public BCEventHandler eventHandler = new BCEventHandler();
     public Database db;
     public User user;
-    public KeyGenerator KG = new KeyGenerator();
-    public DataSource.Callback callback = null;
+    public DataSource.LoadDataCallback callback = null;
     public ECIESManager eciesManager = new ECIESManager(); //static으로 만들면 이상할란가 . . .!?!?
+    public BCManager() throws UnknownHostException {
+        this.ipList = Database.getIpList();
+    }
     public BCManager(ArrayList<String> ipList){
         this.ipList = ipList;
     }
@@ -52,19 +54,19 @@ public class BCManager {
         this.contract.fileData = eciesManager.decryptCipherContract(contract.cipher,user.eciesPrivateKey,contract.IV);
         this.contractGUI = new ContractGUI(this);
         //사용자 모드 별 contractGUI 컨트롤 코드 -> 프로그램 검사하는데는 힘드니까 주석 처리 해둘꼐용  !
-        if(user.userType == USERTYPE.EMPLOYER){
-            if(contract.step == 1 || contract.step == 3){
-                contractGUI.setVisiableAllFalse();
-            }
-        }
-        else{
-            if(contract.step == 2 || contract.step == 4){
-                contractGUI.setVisiableAllFalse();
-            }
-        }
+//        if(user.userType == USERTYPE.EMPLOYER){
+//            if(contract.step == 1 || contract.step == 3){
+//                contractGUI.setVisiableAllFalse();
+//            }
+//        }
+//        else{
+//            if(contract.step == 2 || contract.step == 4){
+//                contractGUI.setVisiableAllFalse();
+//            }
+//        }
     }
 
-    public BCManager(User user, Database db, Contract contract, DataSource.Callback callback) throws Exception {
+    public BCManager(User user, Database db, Contract contract, DataSource.LoadDataCallback callback) throws Exception {
         this(user,db,contract);
         this.callback = callback;
         //        //점주 /근로자 마다 할 수 있는 step이 다른데 그것도 체크해야함
@@ -82,17 +84,17 @@ public class BCManager {
     public void chainUpdate() throws Exception {
         //의문사항 체인 가장 긴걸로 업데이트하라고 전부 뿌리는데, 그럼 악의적인 사용자가 가장 길게 만들어서 뿌리면 어떡하지 . .  ?!?
         try {
-            ipList = db.getIpList();
+            ipList = Database.getIpList();
             cList = new Vector<>();
             for (String ip: ipList){
-                cList.addElement(new Client(ip, "chainRequest"));
+                cList.addElement(new BCClient(ip, "chainRequest"));
             }
-            for (Client i : cList)
+            for (BCClient i : cList)
                 i.join();
             for (String ip: ipList){
-                cList.addElement(new Client(ip, "chainUpdate"));
+                cList.addElement(new BCClient(ip, "chainUpdate"));
             }
-            for (Client i : cList)
+            for (BCClient i : cList)
                 i.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -102,9 +104,9 @@ public class BCManager {
         Boolean result = false;
         try {
             for (String ip: ipList){
-                cList.addElement(new Client(ip, "blockUpdate"));
+                cList.addElement(new BCClient(ip, "blockUpdate"));
             }
-            for (Client i : cList)
+            for (BCClient i : cList)
                 i.join();
             synchronized (chainStr) {
                 chainStr.add(block.get("proofHash").toString());
@@ -112,9 +114,9 @@ public class BCManager {
             System.out.println("countPOW: "+ countPOW);
             if (countPOW > 0) {
                 for (String ip: ipList){
-                    cList.addElement(new Client(ip, "blockSave"));
+                    cList.addElement(new BCClient(ip, "blockSave"));
                 }
-                for (Client i : cList)
+                for (BCClient i : cList)
                     i.join();
                 result = true;
                 System.out.println("BCManager: block save 완료");
@@ -179,7 +181,7 @@ public class BCManager {
             JSONObject data = contract.fileData;
             byte[] hashDataByte = ((JSONObject) data.get("wHashSignature")).get("plain").toString().getBytes(StandardCharsets.UTF_8);
             byte[] sigHashDataByte = Base64.getDecoder().decode(((JSONObject) data.get("wHashSignature")).get("sig").toString());
-            PublicKey sigPublicKey = KG.makePublicKey(((JSONObject) data.get("wHashSignature")).get("publicKey").toString());
+            PublicKey sigPublicKey = KeyGenerator.makePublicKey(((JSONObject) data.get("wHashSignature")).get("publicKey").toString());
             if (isVerify(hashDataByte, sigHashDataByte, sigPublicKey)) {
                 System.out.println("점주가 근로자 서명 검증 성공>_<");
                 block = new JSONObject();
@@ -212,7 +214,7 @@ public class BCManager {
             obj.put("plain", hashData);
             byte[] sigHashData = addSignature(hashData.getBytes(StandardCharsets.UTF_8));
             obj.put("sig", Base64.getEncoder().encodeToString(sigHashData));
-            obj.put("publicKey", KG.replaceKey(false, "ECDSApublic.pem","ECDSA"));
+            obj.put("publicKey", KeyGenerator.replaceKey(false, "ECDSApublic.pem","ECDSA"));
             data.put("oHashSignature", obj);
             saveContractWithCipher(data);
         }
@@ -221,7 +223,7 @@ public class BCManager {
             System.out.println("data: \n" + data);
             byte[] hashDataByte = ((JSONObject) data.get("oHashSignature")).get("plain").toString().getBytes(StandardCharsets.UTF_8);
             byte[] sigHashDataByte = Base64.getDecoder().decode(((JSONObject) data.get("oHashSignature")).get("sig").toString());
-            PublicKey sigPublicKey = KG.makePublicKey(((JSONObject) data.get("oHashSignature")).get("publicKey").toString());
+            PublicKey sigPublicKey = KeyGenerator.makePublicKey(((JSONObject) data.get("oHashSignature")).get("publicKey").toString());
             if (isVerify(hashDataByte, sigHashDataByte, sigPublicKey)) {
                 System.out.println("근로자가 점주 서명 검증 성공");
                 //서명하기 버튼 열리면 될 듯 !!
@@ -231,7 +233,7 @@ public class BCManager {
                 obj.put("plain", hashData);
                 byte[] sigHashData = addSignature(hashData.getBytes(StandardCharsets.UTF_8));
                 obj.put("sig", Base64.getEncoder().encodeToString(sigHashData));
-                obj.put("publicKey", KG.replaceKey(false, "ECDSApublic.pem","ECDSA"));
+                obj.put("publicKey", KeyGenerator.replaceKey(false, "ECDSApublic.pem","ECDSA"));
                 data.put("wHashSignature", obj);
                 saveContractWithCipher(data);
 

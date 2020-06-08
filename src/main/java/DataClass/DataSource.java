@@ -1,14 +1,24 @@
 package DataClass;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.spec.InvalidKeySpecException;
+import org.json.simple.JSONObject;
+
+import org.bson.Document;
+import java.math.BigInteger;
+import java.util.Vector;
 
 public interface DataSource {
-    interface Callback {
+    interface LoadDataCallback {
         void onDataLoaded() throws Exception;
         void onDataFailed();
+        void onDataLoaded(Vector<JSONObject> keywordFile);
+    }
+    interface HECallback{
+        void onHESuccess(byte[][][] arr) throws Exception;
+        void onHESuccess(Object fileId) throws Exception;
+        void onHESuccess(BigInteger alpha, BigInteger x0) throws Exception;
+        void onHEfail();
+    }
+    interface LoadDBCallback{
+        void onDBLoaded(Document document);
     }
 }

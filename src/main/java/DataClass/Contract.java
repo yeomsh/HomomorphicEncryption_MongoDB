@@ -1,16 +1,16 @@
 package DataClass;
 
+import ECIES.ECIESManager;
 import org.bouncycastle.util.encoders.Base64;
 import org.bson.Document;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import util.StringUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 public class Contract {
     public int step; //1,2,3, 4
@@ -19,17 +19,27 @@ public class Contract {
     public JSONObject fileData;
     public byte[] IV;
     public byte[] cipher;
-
+    public Contract(JSONObject file, User user) throws Exception {
+        this.fileData = file;
+        ECIESManager eciesManager = new ECIESManager();
+        this.IV= eciesManager.makeIV();
+        String PkString = Base64.toBase64String(user.eciesPublicKey);
+        this.cipher = eciesManager.senderEncrypt(PkString,file.toJSONString(),this.IV);
+        System.out.println("contract>iv: "+IV.length);
+        System.out.println("contract>cipher: "+cipher.length);
+        JSONObject obj = eciesManager.decryptCipherContract(this.cipher,user.eciesPrivateKey,IV);
+        System.out.println("contract>data:\n"+obj.toString());
+    }
     public Contract(int step, String receiverUid){
         this.step = step;
-        this.receiverUid = sha256(receiverUid);
+        this.receiverUid = StringUtil.getSha256(receiverUid);
     }
 
     public Contract(Object d){
         System.out.println(d.toString());
         //JSONParser parser = new JSONParser();
-            //Object obj = parser.parse(d.toString());
-            //this.fileData = (JSONObject) obj;
+        //Object obj = parser.parse(d.toString());
+        //this.fileData = (JSONObject) obj;
         if(fileData.containsKey("_id")) {
             this._id = fileData.get("_id");
             this.step = Integer.parseInt(fileData.get("step").toString());
@@ -57,25 +67,9 @@ public class Contract {
 //            JSONParser parser = new JSONParser();
 //            Object obj =  parser.parse(d.toJson());
 //            this.fileData = (JSONObject) obj;
-
-
         }
         this.IV = Base64.decode(d.get("IV").toString());
         this.cipher = Base64.decode(d.get("cipher").toString());
         //this.fileData = (JSONObject) obj;
-    }
-
-    public String sha256(String str){
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            digest.reset();
-            digest.update(str.getBytes("utf8"));
-            return String.format("%064x", new BigInteger(1, digest.digest()));
-
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return "error";
-        }
     }
 }

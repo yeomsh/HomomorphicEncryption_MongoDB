@@ -1,8 +1,9 @@
 package DataClass;
 
+import HomomorphicEncryption.AGCDPublicKey;
+import HomomorphicEncryption.HEDataBase;
 import com.mongodb.BasicDBObject;
 
-import com.mongodb.MongoClient.*;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
@@ -13,20 +14,25 @@ import org.json.simple.parser.ParseException;
 import util.StringUtil;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.Vector;
 
 import static com.mongodb.client.model.Filters.elemMatch;
 import static com.mongodb.client.model.Filters.eq;
 
 public class Database {
-    protected MongoClient mongoClient;
-    protected MongoDatabase database;
-    protected MongoCollection<Document> user;
-    protected MongoCursor<Document> cursor;
+    static Random r = new Random();
+    public static MongoClient mongoClient = MongoClients.create();;
+    public static MongoDatabase database = mongoClient.getDatabase("mydb");;
+    public static MongoCollection<Document> user = database.getCollection("user");;
+    public static MongoCursor<Document> cursor;
     public User myUser = null;
     public Database(){
 //        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
@@ -34,9 +40,9 @@ public class Database {
         //203.252.157.85(교수님)
         //mongoClient = new MongoClient("local"/*203.252.166.224*/, 27017); //(501컴퓨터)
 
-        mongoClient = MongoClients.create();
-        database = mongoClient.getDatabase("mydb");
-        user = database.getCollection("user");
+       // mongoClient = MongoClients.create();
+        //database = mongoClient.getDatabase("mydb");
+       // user = database.getCollection("user");
     }
     public Document userDoc(User user){
         return new Document("id",user.id.toString(16))
@@ -145,7 +151,7 @@ public class Database {
         user.insertOne(userDoc);
         this.myUser = new User(userDoc);
     }
-    public ArrayList<String> getIdList(){
+    public static ArrayList<String> getIdList(){
         ArrayList<String> idList = new ArrayList<>();
         BasicDBObject filter = new BasicDBObject();
         filter.put("id", 1);
@@ -161,7 +167,9 @@ public class Database {
         }
         return idList;
     }
-    public ArrayList<String> getIpList() throws Exception {
+    public static ArrayList<String> getIpList() throws UnknownHostException {
+        InetAddress ip = InetAddress.getLocalHost();
+        String myIp = ip.getHostAddress();
         ArrayList<String> ipList = new ArrayList<>();
         BasicDBObject filter = new BasicDBObject();
         filter.put("ip", 1);
@@ -171,7 +179,7 @@ public class Database {
             while (cursor.hasNext()) {
                 Document d = cursor.next();
                 System.out.println(d.getString("ip"));
-                if(d.get("ip").toString().equals(myUser.ip)) {
+                if(d.get("ip").toString().equals(myIp)) {
                     continue;
                 }
                 ipList.add(d.get("ip").toString()); //그냥 d하면 Document{{ip=1}} 로 string 생성됨
@@ -181,7 +189,27 @@ public class Database {
         }
         return ipList;
     }
-    public User getUser(String uid, String ip, DataSource.Callback callback) throws Exception {
+    public static ArrayList<String> getIpList(String ip) {
+        ArrayList<String> ipList = new ArrayList<>();
+        BasicDBObject filter = new BasicDBObject();
+        filter.put("ip", 1);
+        filter.put("_id", 0);
+        cursor = user.find().projection(filter).iterator();
+        try {
+            while (cursor.hasNext()) {
+                Document d = cursor.next();
+                System.out.println(d.getString("ip"));
+                if(d.get("ip").toString().equals(ip)) {
+                    continue;
+                }
+                ipList.add(d.get("ip").toString()); //그냥 d하면 Document{{ip=1}} 로 string 생성됨
+            }
+        } finally {
+            cursor.close();
+        }
+        return ipList;
+    }
+    public User getUser(String uid, String ip, DataSource.LoadDataCallback callback) throws Exception {
         BasicDBObject filter = new BasicDBObject();
         filter.put("contractList", 0);
         cursor = user.find(Filters.eq("ip",ip)).projection(filter).iterator();
@@ -206,14 +234,30 @@ public class Database {
         System.out.println(receiperUid);
         cursor = user.find(Filters.eq("uid",receiperUid)).iterator();
         if(cursor.hasNext()){
-            String temp = cursor.next().get("ECIESpk").toString();
-            System.out.println("receiperuid, ECEISpk : " + receiperUid + "," + temp);
-            return temp;
-            //return cursor.next().get("ECIESpk").toString();
+            return cursor.next().get("ECIESpk").toString();
         }
         else
             System.out.println("receiperuid에 해당하는 ECEISpk 없음");
         return null;
+    }
+
+    public static Vector<AGCDPublicKey> getRandomPublicKeySet(int size){
+        int[] rand = new int[size-1];
+        for (int i = 0; i < size-1; i++) {
+            rand[i] = r.nextInt(19)+1; //1~19
+            for (int j = 0; j < i ; j++) {
+                if(rand[j] == rand[i]){
+                    i--;
+                    break;
+                }
+            }
+        }
+        Vector<AGCDPublicKey> arrPK = new Vector<>();
+        arrPK.add(HEDataBase.getServerPublicKeyX0());
+        for (int i = 1; i < size; i++) {
+            arrPK.add(HEDataBase.getServerPublicKey(rand[i-1]));
+        }
+        return arrPK;
     }
 
 }

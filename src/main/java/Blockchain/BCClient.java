@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-class Client extends Thread {
+class BCClient extends Thread {
     protected int portNum;
     protected String hostName;
     protected String type;
@@ -21,7 +21,7 @@ class Client extends Thread {
     ObjectOutputStream oos = null;
     JSONParser jsonParser = new JSONParser();
 
-    public Client(String ip, String type) {
+    public BCClient(String ip, String type) {
         hostName = ip;
         portNum = 3000;
         this.type = type;

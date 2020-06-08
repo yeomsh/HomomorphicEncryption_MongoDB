@@ -67,6 +67,7 @@ public class MainPannel extends JPanel {
     public void setComboBoxContract(Vector<JSONObject> contractList){
         this.comboBoxContract.removeAllItems();
         for (JSONObject obj: contractList){
+            System.out.println("setCombobox:\n"+((JSONObject)obj.get("oSign")).get("oSign1").toString()+" "+obj.get("wName").toString());
             comboBoxContract.addItem(((JSONObject)obj.get("oSign")).get("oSign1").toString()+" "+obj.get("wName").toString()); //addItem(인자: 콤보박스 string)
         }
     }

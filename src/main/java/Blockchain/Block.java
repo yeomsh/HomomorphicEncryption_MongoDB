@@ -6,8 +6,8 @@ import util.StringUtil;
 
 public class Block {
 
-	private String hash;
-	private String previousHash;
+	private String hash; //이벙네 생성된 hash 값
+	private String previousHash; //바로 이전 블록 hash 값
 	private String data; // Transaction
 	private long timeStamp;
 	private int nonce = 0;
@@ -26,9 +26,6 @@ public class Block {
 	public String ProofOfWork() {
 		mineNewBlock();
 		return hash;
-		// 파일에 저장
-		// makeLog();
-		// 구한 값 보내기 (hash값)
 	}
 
 	// 신규 블록 생성
@@ -58,17 +55,4 @@ public class Block {
 		return timeStamp;
 	}
 
-	// hash 값 파일에 저장
-	// public void makeLog(){
-	//
-	// String filePath = "C:\\Users\\염상희\\Desktop\\log.txt";
-	// try {
-	// PrintWriter pw= new PrintWriter(new FileWriter(filePath, true));
-	// pw.write(hash + "\r\n");
-	// pw.close();
-	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
 }

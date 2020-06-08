@@ -8,7 +8,6 @@ import org.json.simple.parser.ParseException;
 import java.math.BigInteger;
 
 public class CipherContract extends Contract { //data class의 contract 상속으로 바꾸기
-    public int id;
     public Object _id;
     public BigInteger c2;
     public BigInteger c3;
