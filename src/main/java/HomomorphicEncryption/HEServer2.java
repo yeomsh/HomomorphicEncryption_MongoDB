@@ -43,7 +43,7 @@ public class HEServer2 {
         readZindex();
         Selector selector = Selector.open();
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
-        String host = "localhost";
+        String host = "192.168.105.224";
         serverSocket.bind(new InetSocketAddress(host, port));
         serverSocket.configureBlocking(false);
         serverSocket.register(selector, SelectionKey.OP_ACCEPT);
@@ -117,7 +117,11 @@ public class HEServer2 {
         int size = buffer.getInt();
         System.out.println("processREAD> get total size: "+size);
         buffer = ByteBuffer.allocate(size);
-        client.read(buffer); //client가 보낸 buffer 내용을 server가 가지고 있는 buffer에 담기
+        if(buffer.hasRemaining()){ //position 과 limit이 차이나면
+            int c = client.read(buffer);
+            System.out.println("read에서 ㅇ읽은거은거: "+c);
+        }
+        //client가 보낸 buffer 내용을 server가 가지고 있는 buffer에 담기
         buffer.flip();
         String str = new String(buffer.array(), buffer.position(), buffer.limit());
         System.out.println("str:\n"+str);
@@ -128,7 +132,7 @@ public class HEServer2 {
                 case "EXIT":
                     if (client.isConnected() && client.isOpen()) {
                         System.out.println("client: close");
-                        client.close();
+                        client.socket().close();
                     }
                     break;
                 case "uploadKeyword":
@@ -138,7 +142,7 @@ public class HEServer2 {
                     searchKeyword(key, client, buffer, arr);
                     break;
                 case "uploadContract":
-                    uploadContract(arr);
+                    uploadContract(key, arr);
                     break;
                 case "requestAlpha":
                     requestAlpha(client, buffer);
@@ -209,6 +213,7 @@ public class HEServer2 {
         HashMap<Object, Boolean> saveKeywordId = uploadKeyword(cipherDatas);
         System.out.println("올린 키워드: " + saveKeywordId.keySet());
         Boolean ret = HEDataBase.updateZString(saveKeywordId, fileId);
+        System.out.println("uploadkeyword> updateZstringret: "+ret);
         if(ret){
             System.out.println("uploadKeyword> write 설정 ");
             ByteBuffer buffer= ByteBuffer.allocate(4); //message lengh+ message
@@ -220,14 +225,24 @@ public class HEServer2 {
     }
 
 
-    public void uploadContract(String[] arr) {
+    public void uploadContract(SelectionKey key, String[] arr) {
         long start = System.currentTimeMillis();
         BigInteger alpha = new BigInteger(arr[3], 16);
         BigInteger sumPk = new BigInteger(arr[4], 16);
         Object fileId = new ObjectId(arr[5]);
         CipherData cipherData = new CipherData(null, arr[1], arr[2], alpha, sumPk);
         addSystemAlpha(cipherData);
-        HEDataBase.insertContract(cipherData, fileId);
+
+        Boolean ret = HEDataBase.insertContract(cipherData, fileId);
+        System.out.println("uploadContract> insertContract: "+ret);
+        if(ret){
+            System.out.println("uploadContract> write 설정 ");
+            ByteBuffer buffer= ByteBuffer.allocate(4); //message lengh+ message
+            buffer.putInt(1);
+            buffer.flip();
+            key.interestOps(SelectionKey.OP_WRITE);
+            key.attach(buffer);
+        }
         long end = System.currentTimeMillis();
         System.out.println("uploadContract 시간> : "+(end- start));
     }
@@ -256,6 +271,7 @@ public class HEServer2 {
         Vector<byte[][]> keywordFile = new Vector<>();
         CipherKeyword searchKeyword = null;
         long start = System.currentTimeMillis();
+        System.out.println("arrCipherKeywrod.size(): "+arrCipherKeyword.size());
         for (CipherKeyword keyword : arrCipherKeyword) {
             if (keywordTest(cipherData, keyword)) {
                 System.out.println("search : 키워드 같은거 발견 !!");
@@ -357,6 +373,7 @@ public class HEServer2 {
         Vector<Object> saveKeywordId = new Vector<>();
         //해당 키워드 찾기 및 키워드 추가
         long start = System.currentTimeMillis();
+        System.out.println("arrCipherKeyword.size():"+ arrCipherKeyword.size());
         for (CipherKeyword keyword : arrCipherKeyword) {
             if (keywordTest(cipherDatas, keyword)) {
                 System.out.println("같은 키워드 발견!");
@@ -492,5 +509,3 @@ class GenesisServer extends TimerTask {
     }
 
 }
-
-

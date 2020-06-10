@@ -4,8 +4,14 @@ import HomomorphicEncryption.AGCDPublicKey;
 import HomomorphicEncryption.HEDataBase;
 import com.mongodb.BasicDBObject;
 
-import com.mongodb.client.*;
+//import com.mongodb.client.*;
+
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+
 import com.mongodb.client.model.Updates;
 import org.bouncycastle.util.encoders.Base64;
 import org.bson.Document;
@@ -29,10 +35,11 @@ import static com.mongodb.client.model.Filters.eq;
 
 public class Database {
     static Random r = new Random();
-    public static MongoClient mongoClient = MongoClients.create();;
+    //public static MongoClient mongoClient = MongoClients.create();
+    public static MongoClient mongoClient = new MongoClient("114.70.22.2",27017); //legacy //203.252.157.85 //114.70.22.2
     public static MongoDatabase database = mongoClient.getDatabase("mydb");;
     public static MongoCollection<Document> user = database.getCollection("user");;
-    public static MongoCursor<Document> cursor;
+    public static MongoCursor<Document> cursor = user.find().cursor();
     public User myUser = null;
     public Database(){
 //        String dburl = "mongodb://id:pw@192.168.43.253:27017/mydb";
@@ -146,10 +153,11 @@ public class Database {
         }
         return contractList;
     }
-    public void insertUser(User uData) throws InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    public User insertUser(User uData) throws InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
         Document userDoc = userDoc(uData);
         user.insertOne(userDoc);
         this.myUser = new User(userDoc);
+        return this.myUser;
     }
     public static ArrayList<String> getIdList(){
         ArrayList<String> idList = new ArrayList<>();

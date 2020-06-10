@@ -51,6 +51,9 @@ public class BCManager {
         this.db = db;
         this.user = user;
         this.contract = contract;
+        System.out.println(contract.cipher);
+        System.out.println(user.eciesPrivateKey);
+        System.out.println(contract.IV);
         this.contract.fileData = eciesManager.decryptCipherContract(contract.cipher,user.eciesPrivateKey,contract.IV);
         this.contractGUI = new ContractGUI(this);
         //사용자 모드 별 contractGUI 컨트롤 코드 -> 프로그램 검사하는데는 힘드니까 주석 처리 해둘꼐용  !

@@ -23,7 +23,7 @@ class BCClient extends Thread {
 
     public BCClient(String ip, String type) {
         hostName = ip;
-        portNum = 3000;
+        portNum = 3333;
         this.type = type;
         start();
     }

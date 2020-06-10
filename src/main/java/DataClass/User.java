@@ -189,6 +189,7 @@ public class User {
 
     public BigInteger getC2() {
         // System.out.println("riqid : " +user.r.multiply(user.qid));
+        System.out.println("qid: "+qid);
         return hash(r.multiply(qid));
         //System.out.println("c2(2^hexadecimal): 2^"+c2.toString(16));
     }

@@ -41,14 +41,16 @@ public class HEDataBase extends Database{
         cipherData.setFileId(filedoc.get("_id"));
         return filedoc.get("_id");
     }
-    public static void insertContract(CipherData cipherData, Object fileId){
+    public static Boolean insertContract(CipherData cipherData, Object fileId){
         filePEKS.updateOne(Filters.eq("_id",fileId),new Document("$set", new Document("c2",cipherData.c2.toString(16)).append("c3",cipherData.c3.toString(16))));
+        return true;
     }
 
     public static Object insertKeywordPEKS(CipherData cipherData){
         Document keyworddoc = keywordDoc(cipherData.c1, cipherData.c2);
         keywordPEKS.insertOne(keyworddoc);
         cipherData.setFileId(keyworddoc.get("_id"));
+        System.out.println("hedatabse> insertkeywordpeks 완료");
         return keyworddoc.get("_id");
     }
 
@@ -124,6 +126,7 @@ public class HEDataBase extends Database{
                 list.remove(list.size()-1);
             }
         }
+        System.out.println("hedatabse> insertkeywordpeks 완료");
         return true;
     }
 }

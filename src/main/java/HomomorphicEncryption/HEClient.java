@@ -20,11 +20,11 @@ public class HEClient extends Thread {
     Contract contract;
     BigInteger alpha;
     BigInteger sumPk;
-
+    String host = "192.168.105.224"; //"203.252.157.85" , "114.70.22.2"
     public HEClient(String type, DataSource.HECallback callBack) throws IOException {
         client = SocketChannel.open();
         client.configureBlocking(true);
-        client.connect(new InetSocketAddress("localhost", 4000));
+        client.connect(new InetSocketAddress(host, 4000));
         this.type = type;
         this.callBack = callBack;
         start();
@@ -32,7 +32,7 @@ public class HEClient extends Thread {
     public HEClient(String type, CipherData[] cipherDatas, Object fileId,DataSource.HECallback callBack) throws IOException {
         client = SocketChannel.open();
         client.configureBlocking(true);
-        client.connect(new InetSocketAddress("localhost", 4000));
+        client.connect(new InetSocketAddress(host, 4000));
         System.out.println("Connection Success");
         this.type = type;
         this.cipherData1 = cipherDatas[0];
@@ -48,7 +48,7 @@ public class HEClient extends Thread {
     public HEClient(String type, CipherData cipherData, Contract contract,DataSource.HECallback callBack) throws IOException {
         client = SocketChannel.open();
         client.configureBlocking(true);
-        client.connect(new InetSocketAddress("localhost", 4000));
+        client.connect(new InetSocketAddress(host, 4000));
         System.out.println("Connection Success");
         this.type = type;
         this.cipherData1 = cipherData;
@@ -97,8 +97,8 @@ public class HEClient extends Thread {
         client.write(buffer);
         System.out.println("sendClose() 끝");
         if(client.isConnected() && client.isOpen()){
-            System.out.println("client.close() 실행");
-            //client.close();
+//            System.out.println("client.close() 실행");
+//            client.close();
         }
     }
     public void requestAlpha() throws Exception {
@@ -135,18 +135,39 @@ public class HEClient extends Thread {
     }
     public void uploadContract() throws Exception {
         //c2,c3,
+        if(client.isOpen()){
+            System.out.println("1) client is isOpen");
+        }
         Object fileId = HEDataBase.insertContract(contract);
         String str = type + "\n" + cipherData1.c2.toString(16) + "\n"+cipherData1.c3.toString(16) + "\n" + alpha.toString(16) + "\n" + sumPk.toString(16)+"\n"+fileId.toString();
         byte[] message = str.getBytes();
+        System.out.println("message: \n"+str);
         System.out.println("message size: " + message.length);
         ByteBuffer buffer= ByteBuffer.allocate(4+message.length); //message lengh+ message
         buffer.putInt(message.length);
         buffer.put(message);
         buffer.flip();
-        client.write(buffer);
+        if(client.isOpen()){
+            System.out.println("2) client is isOpen");
+        }
+        System.out.println(buffer.hasRemaining());
+        while(buffer.hasRemaining())
+            client.write(buffer);
+        System.out.println("buffer: position: "+buffer.position());
+        System.out.println("buffer: linit: "+buffer.limit());
+        if(client.isConnected()){
+            System.out.println("3) client is isConnected");
+        }
+        else if(client.isOpen()){
+            System.out.println("4) client is isOpen");
+        }
         System.out.println("uploadContract끝1");
+        buffer.clear();
+        client.read(buffer);
+        buffer.flip();
+        int ret = buffer.getInt();
+        System.out.println("uploadContract  ret: "+ret);
         callBack.onHESuccess(fileId);
-        System.out.println("uploadContract끝2");
     }
 
     public void uploadKeyword() throws IOException {
@@ -159,7 +180,8 @@ public class HEClient extends Thread {
         buffer.putInt(message.length);
         buffer.put(message);
         buffer.flip();
-        client.write(buffer);
+        while(buffer.hasRemaining())
+            client.write(buffer);
         System.out.println("uploadKeyword 끝");
         buffer.clear();
         client.read(buffer);
@@ -178,7 +200,8 @@ public class HEClient extends Thread {
         buffer.putInt(message.length);
         buffer.put(message);
         buffer.flip();
-        client.write(buffer);
+        while(buffer.hasRemaining())
+            client.write(buffer);
 
         buffer.clear();
         System.out.println("Clear: "+buffer.position());
@@ -192,7 +215,7 @@ public class HEClient extends Thread {
         buffer.flip();
         System.out.println("flip: "+buffer.position());
         System.out.println("flip: "+buffer.limit());
-
+//5edde928f8a8cb5a60d73040
         int val = buffer.getInt();
 
         System.out.println("getInt: "+buffer.position());
